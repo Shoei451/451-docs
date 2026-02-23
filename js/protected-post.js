@@ -25,7 +25,7 @@ const contentEl     = document.getElementById('markdown-content');
 // =====================================================
 function buildToc() {
   const article  = document.getElementById('article');
-  const headings = article.querySelectorAll('h2, h3, h4');
+  const headings = article.querySelectorAll('h1, h2, h3, h4');
   if (!headings.length) return; // 見出しゼロなら目次不要
 
   const tocToggle = document.getElementById('tocToggle');
