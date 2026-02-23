@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Daily Routine",
+    "date": "2026-02-23",
+    "description": "これを日常にしたい",
+    "thumbnail": "https://picsum.photos/1200/500",
+    "outputFile": "Daily_routine.html"
+  },
+  {
+    "title": "政治・経済プリント",
+    "date": "2026-02-23",
+    "description": "政治・経済の3学期期末試験対策用の一問一答",
+    "thumbnail": "https://picsum.photos/1200/500",
+    "outputFile": "seikei.html"
+  },
+  {
+    "title": "構文テスト",
+    "date": "2026-02-23",
+    "description": "全構文の表示確認用サンプル。",
+    "thumbnail": "https://picsum.photos/1200/500",
+    "outputFile": "test.html"
+  }
+]

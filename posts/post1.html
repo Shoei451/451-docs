@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Note Design</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body>
+
+<!-- ダークモードトグル -->
+<span class="logo-switches">
+  <button id="theme-toggle" title="Toggle Theme" aria-label="Toggle Theme">
+    <svg id="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+    <svg id="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </button>
+</span>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay"></div>
+
+<!-- TOC Toggle -->
+<button class="toc-toggle" id="tocToggle">
+  <span class="icon">☰</span>
+  <span class="label">目次</span>
+</button>
+
+<!-- Sidebar -->
+<aside class="toc" id="toc">
+  <h3>目次</h3>
+  <nav id="tocList"></nav>
+</aside>
+
+<!-- Main Content -->
+<article class="article" id="article">
+
+  <img src="https://picsum.photos/1200/500" class="thumbnail">
+
+  
+
+  <h1>思考を深めるノート設計</h1>
+
+  <nav class="toc-box" id="tocBox">
+    <h3>目次</h3>
+    <ul></ul>
+  </nav>
+
+  <h2>余白の意味</h2>
+  <p>余白は装飾ではなく、認知の緩衝材である。</p>
+
+  <h3>行間の効果</h3>
+  <p>行間は読解速度と理解度に影響を与える。</p>
+
+  <h2>構造化する力</h2>
+  <p>文章を書くことは思考の構造化である。</p>
+
+  <h3>アウトライン思考</h3>
+  <p>階層構造を意識することで論理が明確になる。</p>
+
+  <h2>結論</h2>
+  <p>UIは引き算。主役は常にコンテンツ。</p>
+
+</article>
+
+<script src="../js/script.js"></script>
+<script src="../js/theme-toggle.js"></script>
+</body>
+</html>
