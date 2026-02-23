@@ -133,6 +133,11 @@ form.addEventListener('submit', async (e) => {
       // Markdown → HTML レンダリング
       contentEl.innerHTML = marked.parse(post.content || '');
 
+      // Markdown → HTML レンダリング
+      // headerIds: false で ## 1 のような数字見出しへの自動ID付与を無効化
+      marked.use({ mangle: false, headerIds: false });
+      contentEl.innerHTML = marked.parse(post.content || '');
+
       // KaTeX（defer 読み込みのため手動で呼ぶ）
       if (typeof renderMathInElement !== 'undefined') {
         renderMathInElement(contentEl, {
