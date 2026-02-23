@@ -17,7 +17,7 @@ function inline(text) {
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
     .replace(/==(.+?)==/g, "<mark>$1</mark>")
-    .replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, "$1");
+    .replace(/\\([\\`*_{}\[\]()#+\-.!|~])/g, "$1");
 }
 
 function stripInline(text) {
@@ -27,7 +27,7 @@ function stripInline(text) {
     .replace(/\*(.+?)\*/g,          "$1")
     .replace(/`([^`]+)`/g,           "$1")
     .replace(/==(.+?)==/g,           "$1")
-    .replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, "$1");
+    .replace(/\\([\\`*_{}\[\]()#+\-.!|~])/g, "$1");
 }
 
 function escape(str) {
@@ -244,6 +244,7 @@ function renderPost({ title, date, thumbnail, body }) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escape(title)}</title>
+  <link rel="icon" href="../images/451-docs-favicon.png">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/theme.css">
   <!-- KaTeX -->
@@ -352,6 +353,7 @@ function renderIndexCards(posts) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Notes</title>
+  <link rel="icon" href="images/451-docs-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
