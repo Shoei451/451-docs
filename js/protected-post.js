@@ -130,9 +130,7 @@ form.addEventListener('submit', async (e) => {
 
       document.getElementById('post-header').style.display = '';
 
-      // Markdown → HTML レンダリング
-      contentEl.innerHTML = marked.parse(post.content || '');
-
+ 
       // Markdown → HTML レンダリング
       // headerIds: false で ## 1 のような数字見出しへの自動ID付与を無効化
       marked.use({ mangle: false, headerIds: false });
