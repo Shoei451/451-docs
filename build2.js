@@ -427,7 +427,8 @@ ${cards}
 </main>
 
 <footer class="site-footer-bottom">
-  <p>© 2026 My Notes by Claude AI + ChatGPT + Shoei451</p>
+  <p>© 2026 Shoei451<br>Created with assistance from Claude AI and ChatGPT.
+</p>
 </footer>
 
 <script src="js/script.js"></script>
