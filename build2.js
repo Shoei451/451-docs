@@ -312,6 +312,9 @@ function renderPost({ title, date, thumbnail, body }) {
   </nav>
 
   ${body}
+  <footer class="site-footer-bottom">
+  <p>© 2026 Shoei451</p>
+</footer>
 </article>
 
 <script src="../js/script.js"></script>
@@ -330,20 +333,21 @@ function formatDate(dateStr) {
 // index.html 自動更新（新プロフィールレイアウト対応）
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+// build2.js の renderIndexCards を以下に差し替える
+// 変更点：
+//   1. 静的カード生成 (${cards}) を廃止 → JS で動的生成
+//   2. <div id="home-container"> を空にする（JSで埋める）
+//   3. <span id="posts-count"> を追加（保護記事込みのカウント更新用）
+//   4. スクリプト末尾に config.js / supabase-client.js の読み込みと
+//      Supabase フェッチコードを追加
+// -------------------------------------------------------------------
+
 function renderIndexCards(posts) {
-  const cards = posts
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .map(p => `
-    <a href="posts/${p.outputFile}" class="card">
-      <div class="card-img-wrap">
-        <img src="${p.thumbnail || "https://picsum.photos/600/300"}" alt="" loading="lazy" />
-      </div>
-      <div class="card-body">
-        <h2 class="card-title">${escape(p.title)}</h2>
-        <p class="card-desc">${escape(p.description || "")}</p>
-        <span class="card-date">${formatDate(p.date)}</span>
-      </div>
-    </a>`).join("\n");
+  // 公開記事のデータを JSON として静的埋め込み（JS側で使う）
+  const postsJson = JSON.stringify(
+    posts.sort((a, b) => b.date.localeCompare(a.date))
+  );
 
   const count = posts.length;
 
@@ -352,14 +356,38 @@ function renderIndexCards(posts) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Notes - Shoei451</title>
-  <link rel="icon" href="images/451-docs-favicon.png">
+  <title>My Notes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/home.css">
+  <style>
+    /* 保護記事カード用追加スタイル */
+    .card--protected { border-color: var(--accent, #268bd2); }
+    .card-protected-thumb {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      aspect-ratio: 16/9;
+      font-size: 2.5rem;
+      background: var(--entry, #073642);
+    }
+    .card-protected-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--accent, #268bd2);
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+    }
+  </style>
 </head>
 <body>
 
@@ -419,23 +447,136 @@ function renderIndexCards(posts) {
 <main class="posts-section">
   <div class="posts-header">
     <h2 class="posts-heading">Notes</h2>
-    <span class="posts-count">${count} posts</span>
+    <span class="posts-count" id="posts-count">${count} posts</span>
   </div>
-  <div class="home-container">
-${cards}
-  </div>
+  <!-- カードはJSで動的生成 -->
+  <div class="home-container" id="home-container"></div>
 </main>
 
 <footer class="site-footer-bottom">
-  <p>© 2026 Shoei451<br>Created with assistance from Claude AI and ChatGPT.
-</p>
+  <p>© 2026 Shoei451<br>Created with assistance from Claude AI and ChatGPT.</p>
 </footer>
 
 <script src="js/script.js"></script>
 <script src="js/theme-toggle.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+// =====================================================
+// 公開記事データ（build 時に静的埋め込み・降順ソート済み）
+// =====================================================
+const PUBLIC_POSTS = ${postsJson};
+
+// =====================================================
+// Supabase 設定（js/config.js の SITE_CONFIG から参照）
+// =====================================================
+const SUPABASE_CONFIG = {
+  url:     (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_URL      : '',
+  anonKey: (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_ANON_KEY : ''
+};
+
+// =====================================================
+// ユーティリティ
+// =====================================================
+function formatDateStr(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
+}
+
+// =====================================================
+// カード生成
+// =====================================================
+function createPublicCard(p) {
+  const a = document.createElement('a');
+  a.href = 'posts/' + p.outputFile;
+  a.className = 'card';
+  // data-date: 日付降順挿入で使う
+  a.dataset.date = p.date || '';
+  a.innerHTML = \`
+    <div class="card-img-wrap">
+      <img src="\${p.thumbnail || 'https://picsum.photos/600/300'}" alt="" loading="lazy" />
+    </div>
+    <div class="card-body">
+      <h2 class="card-title">\${p.title}</h2>
+      <p class="card-desc">\${p.description || ''}</p>
+      <span class="card-date">\${formatDateStr(p.date)}</span>
+    </div>
+  \`;
+  return a;
+}
+
+function createProtectedCard(p) {
+  const isoDate = p.created_at ? p.created_at.slice(0, 10) : '';
+  const displayDate = p.created_at
+    ? new Date(p.created_at).toLocaleDateString('ja-JP')
+    : '';
+  const a = document.createElement('a');
+  a.href = 'protected-post.html?slug=' + encodeURIComponent(p.slug);
+  a.className = 'card card--protected';
+  a.dataset.date = isoDate;
+  a.innerHTML = \`
+    <div class="card-img-wrap">
+      <div class="card-protected-thumb">🔒</div>
+    </div>
+    <div class="card-body">
+      <span class="card-protected-badge">Protected</span>
+      <h2 class="card-title">\${p.title}</h2>
+      <p class="card-desc">\${p.excerpt || 'パスワードで保護された記事です。'}</p>
+      <span class="card-date">\${displayDate}</span>
+    </div>
+  \`;
+  return a;
+}
+
+// 日付降順を維持しながら container に挿入
+function insertByDate(container, card, isoDate) {
+  const existing = [...container.querySelectorAll('.card')];
+  const before = existing.find(el => (el.dataset.date || '') < isoDate);
+  if (before) container.insertBefore(card, before);
+  else container.appendChild(card);
+}
+
+// =====================================================
+// 初期化
+// =====================================================
+async function initialize() {
+  const container = document.getElementById('home-container');
+  const countEl   = document.getElementById('posts-count');
+
+  // 1. 公開記事をレンダリング
+  PUBLIC_POSTS.forEach(p => container.appendChild(createPublicCard(p)));
+
+  // 2. Supabase が有効なら保護記事を取得して日付順に挿入
+  if (!SUPABASE_CONFIG.url || SUPABASE_CONFIG.url.includes('your-project')) return;
+
+  try {
+    const client = new SupabaseClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+    const result = await client.getProtectedPostsMeta();
+    if (!result.success || result.posts.length === 0) return;
+
+    result.posts
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .forEach(p => {
+        const card    = createProtectedCard(p);
+        const isoDate = p.created_at ? p.created_at.slice(0, 10) : '';
+        insertByDate(container, card, isoDate);
+      });
+
+    if (countEl) {
+      countEl.textContent = (PUBLIC_POSTS.length + result.posts.length) + ' posts';
+    }
+  } catch (e) {
+    console.warn('保護記事の取得に失敗しました:', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initialize);
+</script>
 </body>
 </html>`;
 }
+
 
 // -------------------------------------------------------------------
 // メイン処理

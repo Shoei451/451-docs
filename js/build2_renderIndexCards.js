@@ -1,4 +1,22 @@
-<!DOCTYPE html>
+// -------------------------------------------------------------------
+// build2.js の renderIndexCards を以下に差し替える
+// 変更点：
+//   1. 静的カード生成 (${cards}) を廃止 → JS で動的生成
+//   2. <div id="home-container"> を空にする（JSで埋める）
+//   3. <span id="posts-count"> を追加（保護記事込みのカウント更新用）
+//   4. スクリプト末尾に config.js / supabase-client.js の読み込みと
+//      Supabase フェッチコードを追加
+// -------------------------------------------------------------------
+
+function renderIndexCards(posts) {
+  // 公開記事のデータを JSON として静的埋め込み（JS側で使う）
+  const postsJson = JSON.stringify(
+    posts.sort((a, b) => b.date.localeCompare(a.date))
+  );
+
+  const count = posts.length;
+
+  return `<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -68,24 +86,22 @@
     <div class="profile-right">
       <p class="profile-label">Personal Notes</p>
       <h1 class="profile-name">My<br><em>Notes.</em></h1>
-      <p id="451-name">Shoei451</p>
       <p class="profile-bio">
-        I am a passionate note-taker who loves to capture thoughts, ideas, and knowledge in a structured way. This is my personal space to share insights, reflections, and learnings on various topics. Here you'll find a mix of technical notes, book summaries, and random musings. My goal is to create a resource that is both useful to myself and interesting to others who stumble upon it. Happy reading!
+        高校生。勉強・日常・思考の記録をここに残しています。
       </p>
-      
       <div class="profile-links">
-        <a href="https://github.com/Shoei451" target="_blank" rel="noopener" class="profile-link">
+        <a href="https://github.com" target="_blank" rel="noopener" class="profile-link">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
           </svg>
           GitHub
         </a>
-        <!--<a href="https://x.com" target="_blank" rel="noopener" class="profile-link">
+        <a href="https://x.com" target="_blank" rel="noopener" class="profile-link">
           <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
           X
-        </a>-->
+        </a>
       </div>
     </div>
   </div>
@@ -94,17 +110,16 @@
 <main class="posts-section">
   <div class="posts-header">
     <h2 class="posts-heading">Notes</h2>
-    <span class="posts-count" id="posts-count">3 posts</span>
+    <span class="posts-count" id="posts-count">${count} posts</span>
   </div>
   <!-- カードはJSで動的生成 -->
   <div class="home-container" id="home-container"></div>
 </main>
 
 <footer class="site-footer-bottom">
-  <p>© 2026 Shoei451<br>Created with assistance from Claude AI and ChatGPT.</p>
+  <p>© 2026 My Notes</p>
 </footer>
 
-<script src="js/script.js"></script>
 <script src="js/theme-toggle.js"></script>
 <script src="js/config.js"></script>
 <script src="js/supabase-client.js"></script>
@@ -112,7 +127,7 @@
 // =====================================================
 // 公開記事データ（build 時に静的埋め込み・降順ソート済み）
 // =====================================================
-const PUBLIC_POSTS = [{"title":"Daily Routine","date":"2026-02-23","description":"これを日常にしたい","thumbnail":"https://picsum.photos/1200/500","outputFile":"Daily_routine.html"},{"title":"政治・経済プリント","date":"2026-02-23","description":"政治・経済の3学期期末試験対策用の一問一答","thumbnail":"https://picsum.photos/1200/500","outputFile":"seikei.html"},{"title":"構文テスト","date":"2026-02-23","description":"全構文の表示確認用サンプル。","thumbnail":"https://picsum.photos/1200/500","outputFile":"test.html"}];
+const PUBLIC_POSTS = ${postsJson};
 
 // =====================================================
 // Supabase 設定（js/config.js の SITE_CONFIG から参照）
@@ -140,16 +155,16 @@ function createPublicCard(p) {
   a.className = 'card';
   // data-date: 日付降順挿入で使う
   a.dataset.date = p.date || '';
-  a.innerHTML = `
+  a.innerHTML = \`
     <div class="card-img-wrap">
-      <img src="${p.thumbnail || 'https://picsum.photos/600/300'}" alt="" loading="lazy" />
+      <img src="\${p.thumbnail || 'https://picsum.photos/600/300'}" alt="" loading="lazy" />
     </div>
     <div class="card-body">
-      <h2 class="card-title">${p.title}</h2>
-      <p class="card-desc">${p.description || ''}</p>
-      <span class="card-date">${formatDateStr(p.date)}</span>
+      <h2 class="card-title">\${p.title}</h2>
+      <p class="card-desc">\${p.description || ''}</p>
+      <span class="card-date">\${formatDateStr(p.date)}</span>
     </div>
-  `;
+  \`;
   return a;
 }
 
@@ -162,17 +177,17 @@ function createProtectedCard(p) {
   a.href = 'protected-post.html?slug=' + encodeURIComponent(p.slug);
   a.className = 'card card--protected';
   a.dataset.date = isoDate;
-  a.innerHTML = `
+  a.innerHTML = \`
     <div class="card-img-wrap">
       <div class="card-protected-thumb">🔒</div>
     </div>
     <div class="card-body">
       <span class="card-protected-badge">Protected</span>
-      <h2 class="card-title">${p.title}</h2>
-      <p class="card-desc">${p.excerpt || 'パスワードで保護された記事です。'}</p>
-      <span class="card-date">${displayDate}</span>
+      <h2 class="card-title">\${p.title}</h2>
+      <p class="card-desc">\${p.excerpt || 'パスワードで保護された記事です。'}</p>
+      <span class="card-date">\${displayDate}</span>
     </div>
-  `;
+  \`;
   return a;
 }
 
@@ -221,4 +236,5 @@ async function initialize() {
 document.addEventListener('DOMContentLoaded', initialize);
 </script>
 </body>
-</html>
+</html>`;
+}

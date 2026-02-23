@@ -223,22 +223,7 @@ body {
   letter-spacing: 0.03em;
 }
 
-/* =====================
-   FOOTER
-===================== */
 
-.site-footer-bottom {
-  text-align: center;
-  padding: 32px 24px 48px;
-  font-size: 0.8rem;
-  color: var(--sub);
-  border-top: 1px solid var(--border);
-}
-
-.site-footer-bottom a {
-  color: var(--accent);
-  text-decoration: none;
-}
 
 /* =====================
    RESPONSIVE

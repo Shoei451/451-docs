@@ -273,3 +273,21 @@ input[type="checkbox"] {
 body:has(.back-link) .toc-toggle {
   left: 148px;
 }
+
+
+/* =====================
+   FOOTER
+===================== */
+
+.site-footer-bottom {
+  text-align: center;
+  padding: 32px 24px 48px;
+  font-size: 0.8rem;
+  color: var(--sub);
+  border-top: 1px solid var(--border);
+}
+
+.site-footer-bottom a {
+  color: var(--accent);
+  text-decoration: none;
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protected Post — My Notes</title>
+  <link rel="icon" type="image/png" href="images/451-docs-favicon.png" />
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/protected-post.css">
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <!-- Marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+
+<!-- Theme Toggle -->
+<span class="logo-switches">
+  <button id="theme-toggle" aria-label="Toggle Theme">
+    <svg id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+</span>
+
+<!-- TOC: Overlay & Sidebar（最初は非表示。目次ありの記事で buildToc() が表示する） -->
+<div class="overlay" id="overlay"></div>
+
+<button class="toc-toggle" id="tocToggle" style="display:none;">
+  <span class="icon">☰</span>
+  <span class="label">目次</span>
+</button>
+
+<aside class="toc" id="toc">
+  <h3>目次</h3>
+  <nav id="tocList"></nav>
+</aside>
+
+<!-- Password Overlay -->
+<div class="password-overlay" id="password-overlay">
+  <div class="password-dialog">
+    <h2>🔒 Protected Post</h2>
+    <p>パスワードを入力してください</p>
+    <form id="password-form">
+      <input type="password" id="password-input" class="password-input"
+        placeholder="Password" autocomplete="off" required />
+      <button type="submit" class="password-submit">
+        <span id="submit-text">表示する</span>
+        <div class="loading-spinner" id="loading-spinner"></div>
+      </button>
+    </form>
+    <p class="password-error" id="password-error">パスワードが違います。</p>
+  </div>
+</div>
+
+<!-- Post Header（認証後に表示） -->
+<div class="post-header" id="post-header" style="display:none;">
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      style="width:14px;height:14px;vertical-align:middle;margin-right:4px;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Home
+  </a>
+  <h1 id="post-title"></h1>
+  <div class="post-meta-line" id="post-meta"></div>
+  <div class="post-tags" id="post-tags"></div>
+</div>
+
+<!-- Article（id="article" は script.js が参照する命名だが、
+     ここでは buildToc() 内で直接 querySelectorAll するので問題なし） -->
+<article class="article" id="article">
+
+  <!-- インライン TOC Box（見出しありの記事でのみ表示） -->
+  <nav class="toc-box" id="tocBox" style="display:none;">
+    <h3>目次</h3>
+    <ul></ul>
+  </nav>
+
+  <!-- Markdown のレンダリング先 -->
+  <div id="markdown-content">
+    <p style="text-align:center; color:var(--sub); padding:60px 0;">
+      パスワードを入力して記事を表示してください。
+    </p>
+  </div>
+
+</article>
+
+<footer style="margin-top:80px; border-top:1px solid var(--border);
+  padding:40px 24px; text-align:center; color:var(--sub); font-size:0.88rem;">
+  © 2026 Shoei451
+</footer>
+
+<script src="js/theme-toggle.js"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/protected-post.js"></script>
+
+</body>
+</html>
