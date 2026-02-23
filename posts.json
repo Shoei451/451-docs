@@ -1,12 +1,5 @@
 [
   {
-    "title": "Daily Routine",
-    "date": "2026-02-23",
-    "description": "これを日常にしたい",
-    "thumbnail": "https://picsum.photos/1200/500",
-    "outputFile": "Daily_routine.html"
-  },
-  {
     "title": "政治・経済プリント",
     "date": "2026-02-23",
     "description": "政治・経済の3学期期末試験対策用の一問一答",
@@ -19,5 +12,12 @@
     "description": "全構文の表示確認用サンプル。",
     "thumbnail": "https://picsum.photos/1200/500",
     "outputFile": "test.html"
+  },
+  {
+    "title": "中国王朝史まとめ ver.1",
+    "date": "2026-02-23",
+    "description": "中国の王朝史。諸王朝の特徴を表にまとめました（殷～唐まで）",
+    "thumbnail": "https://chinese-history-note.netlify.app/images/3dynasities_favicon.png",
+    "outputFile": "chinese-dinasities-table-1.html"
   }
 ]
