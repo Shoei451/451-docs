@@ -89,9 +89,13 @@ body.toc-open .toc {
   color: var(--text);
   font-weight: 600;
 }
+/* サイドバー */
+.toc .h2 {
+  padding-left: 12px;   /* ★追加 */
+}
 
 .toc .h3 {
-  padding-left: 16px;
+  padding-left: 24px;   /* 16px → 24px に変更 */
   font-size: 0.9rem;
 }
 
@@ -170,11 +174,16 @@ body.toc-open .toc {
 .toc-box a:hover {
   color: var(--text);
 }
+/* インライン目次 */
+.toc-box .h2 {
+  padding-left: 12px;   /* ★追加 */
+}
 
 .toc-box .h3 {
-  padding-left: 16px;
+  padding-left: 24px;   /* 16px → 24px に変更 */
   font-size: 0.9rem;
 }
+
 
 .toc .h4,
 .toc-box .h4 {
