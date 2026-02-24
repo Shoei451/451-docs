@@ -44,23 +44,25 @@ function buildToc() {
     heading.id = id;
 
     const makeLink = () => {
-      const a = document.createElement('a');
-      a.href = '#' + id;
-      a.textContent = heading.textContent;
-      if (heading.tagName === 'H3') a.classList.add('h3');
-      if (heading.tagName === 'H4') a.classList.add('h4');
-      return a;
-    };
+  const a = document.createElement('a');
+  a.href = '#' + id;
+  a.textContent = heading.textContent;
+  if (heading.tagName === 'H2') a.classList.add('h2'); // ★追加
+  if (heading.tagName === 'H3') a.classList.add('h3');
+  if (heading.tagName === 'H4') a.classList.add('h4');
+  return a;
+};
+
+// インライン目次の li にも同様に
+const li = document.createElement('li');
+if (heading.tagName === 'H2') li.classList.add('h2'); // ★追加
+if (heading.tagName === 'H3') li.classList.add('h3');
+if (heading.tagName === 'H4') li.classList.add('h4');
+
 
     // サイドバー
     tocList.appendChild(makeLink());
 
-    // インライン目次
-    const li = document.createElement('li');
-    if (heading.tagName === 'H3') li.classList.add('h3');
-    if (heading.tagName === 'H4') li.classList.add('h4');
-    li.appendChild(makeLink());
-    tocBox.appendChild(li);
   });
 
   // ===== 開閉 =====
