@@ -26,46 +26,43 @@ const contentEl     = document.getElementById('markdown-content');
 function buildToc() {
   const article  = document.getElementById('article');
   const headings = article.querySelectorAll('h1, h2, h3, h4');
-  if (!headings.length) return; // 見出しゼロなら目次不要
+  if (!headings.length) return;
 
   const tocToggle = document.getElementById('tocToggle');
-  const overlay   = document.getElementById('overlay');
-  const tocList   = document.getElementById('tocList');
   const tocBoxEl  = document.getElementById('tocBox');
+  const tocList   = document.getElementById('tocList');
   const tocBox    = tocBoxEl.querySelector('ul');
 
-  // サイドバートグルとインライン目次を表示
   tocToggle.style.display = '';
   tocBoxEl.style.display  = '';
 
-  // 各見出しにIDを振り、リンクを生成
   headings.forEach((heading, i) => {
     const id = 'section-' + i;
     heading.id = id;
 
     const makeLink = () => {
-  const a = document.createElement('a');
-  a.href = '#' + id;
-  a.textContent = heading.textContent;
-  if (heading.tagName === 'H2') a.classList.add('h2'); // ★追加
-  if (heading.tagName === 'H3') a.classList.add('h3');
-  if (heading.tagName === 'H4') a.classList.add('h4');
-  return a;
-};
-
-// インライン目次の li にも同様に
-const li = document.createElement('li');
-if (heading.tagName === 'H2') li.classList.add('h2'); // ★追加
-if (heading.tagName === 'H3') li.classList.add('h3');
-if (heading.tagName === 'H4') li.classList.add('h4');
-
+      const a = document.createElement('a');
+      a.href = '#' + id;
+      a.textContent = heading.textContent;
+      if (heading.tagName === 'H2') a.classList.add('h2'); // ★
+      if (heading.tagName === 'H3') a.classList.add('h3');
+      if (heading.tagName === 'H4') a.classList.add('h4');
+      return a;
+    };
 
     // サイドバー
     tocList.appendChild(makeLink());
 
+    // インライン目次
+    const li = document.createElement('li');
+    if (heading.tagName === 'H2') li.classList.add('h2'); // ★
+    if (heading.tagName === 'H3') li.classList.add('h3');
+    if (heading.tagName === 'H4') li.classList.add('h4');
+    li.appendChild(makeLink());
+    tocBox.appendChild(li);
   });
 
-  // ===== 開閉 =====
+  const overlay = document.getElementById('overlay');
   const open  = () => document.body.classList.add('toc-open');
   const close = () => document.body.classList.remove('toc-open');
 
@@ -73,7 +70,6 @@ if (heading.tagName === 'H4') li.classList.add('h4');
   overlay.addEventListener('click', close);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
-  // ===== スムーズスクロール =====
   document.addEventListener('click', (e) => {
     if (e.target.matches('.toc a, .toc-box a')) {
       e.preventDefault();
@@ -83,7 +79,6 @@ if (heading.tagName === 'H4') li.classList.add('h4');
     }
   });
 
-  // ===== アクティブハイライト =====
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -96,7 +91,6 @@ if (heading.tagName === 'H4') li.classList.add('h4');
 
   headings.forEach(h => observer.observe(h));
 }
-
 // =====================================================
 // パスワード送信
 // =====================================================
