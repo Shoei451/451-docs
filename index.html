@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Notes</title>
+  <link rel="icon" type="image/svg+xml" href="images/s-docs.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
@@ -107,12 +108,13 @@
 <script src="js/script.js"></script>
 <script src="js/theme-toggle.js"></script>
 <script src="js/config.js"></script>
+<script src="js/home-data.js"></script>
 <script src="js/supabase-client.js"></script>
 <script>
 // =====================================================
 // 公開記事データ（build 時に静的埋め込み・降順ソート済み）
 // =====================================================
-const PUBLIC_POSTS = [{"title":"政治・経済プリント","date":"2026-02-23","description":"政治・経済の3学期期末試験対策用の一問一答","thumbnail":"https://picsum.photos/1200/500","outputFile":"seikei.html"},{"title":"構文テスト","date":"2026-02-23","description":"全構文の表示確認用サンプル。","thumbnail":"https://picsum.photos/1200/500","outputFile":"test.html"},{"title":"中国王朝史まとめ ver.1","date":"2026-02-23","description":"中国の王朝史。諸王朝の特徴を表にまとめました（殷～唐まで）","thumbnail":"https://chinese-history-note.netlify.app/images/3dynasities_favicon.png","outputFile":"chinese-dinasities-table-1.html"}];
+const PUBLIC_POSTS = window.PUBLIC_POSTS || [];
 
 // =====================================================
 // Supabase 設定（js/config.js の SITE_CONFIG から参照）
