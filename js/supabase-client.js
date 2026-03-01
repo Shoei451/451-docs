@@ -42,7 +42,7 @@ class SupabaseClient {
   async getProtectedPostsMeta() {
     try {
       const response = await fetch(
-        `${this.supabaseUrl}/rest/v1/protected_posts?select=id,slug,title,tags,excerpt,read_time,created_at`,
+        `${this.supabaseUrl}/rest/v1/protected_posts?select=id,slug,title,category,tags,excerpt,read_time,created_at`,
         { method: 'GET', headers: this.headers }
       );
       if (!response.ok) throw new Error('Failed to fetch posts metadata');

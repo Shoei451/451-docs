@@ -3,6 +3,7 @@
  date: 2026-02-23
  description: 政治・経済の3学期期末試験対策用の一問一答
  thumbnail: https://picsum.photos/1200/500
+ category: miscellaneous
 ---
 
 # 政治・経済 一問一答 3学期期末試験対策

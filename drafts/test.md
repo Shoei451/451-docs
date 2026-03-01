@@ -3,6 +3,7 @@
  date: 2026-02-23
  description: 全構文の表示確認用サンプル。
  thumbnail: https://picsum.photos/1200/500
+ category: miscellaneous
 ---
 
 # 見出しテスト

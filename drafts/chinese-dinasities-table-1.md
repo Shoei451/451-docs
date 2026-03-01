@@ -3,6 +3,7 @@
  date: 2026-02-23
  description: 中国の王朝史。諸王朝の特徴を表にまとめました（殷～唐まで）
  thumbnail: https://chinese-history-note.netlify.app/images/3dynasities_favicon.png
+ category: history
 
 ---
 # **中国王朝まとめ**
