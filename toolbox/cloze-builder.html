@@ -581,7 +581,7 @@ function updateStats() {
   document.getElementById('sbLines').textContent = lines;
 
   const badge = document.getElementById('clozeBadge');
-  badge.textContent = `⟦⟦ ${count}`;
+  badge.textContent = `⟦⟦ ${count} ⟧⟧`;
   badge.classList.toggle('has-cloze', count > 0);
 
   document.getElementById('dlBtn').disabled = !raw.trim();
