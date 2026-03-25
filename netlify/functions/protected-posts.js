@@ -3,7 +3,7 @@
  * Route: GET /api/protected-posts
  *
  * Returns metadata list of protected posts (no content, no password).
- * Reads from md-contents/451-docs/private_posts/ via GitHub API.
+ * Reads from md-contents/451-docs/protected_posts/ via GitHub API.
  *
  * NOTE: _lib/ helpers are intentionally inlined here to avoid
  * Netlify bundler issues with local require() resolution.
@@ -11,7 +11,7 @@
 
 // ── GitHub API ──────────────────────────────────────────
 const REPO = 'Shoei451/md-contents';
-const BASE = '451-docs/private_posts';
+const BASE = '451-docs/protected_posts';
 const API  = 'https://api.github.com';
 
 function ghHeaders() {
