@@ -52,7 +52,7 @@ jobs:
 
       # ── Step 4: ビルド ──
       - name: Run build
-        run: node build.js
+        run: node scripts/build.js
 
       # ── Step 5: 生成ファイルをコミット ──
       # posts-data/*.json, posts.json, js/home-data.js を自動コミット
