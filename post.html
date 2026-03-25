@@ -10,15 +10,12 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/theme.css">
-  <!--
-    KaTeX / Highlight.js はここでは読み込まない。
-    /api/post?slug= のレスポンス JSON の components フィールドを見てから
-    動的に挿入する（loadComponents() 参照）。
-  -->
-  <!-- marked.js は全記事で必要なので静的読み込み -->
+  <!-- marked.js is needed for every post; load statically -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+
+<div id="page-loader"></div>
 
 <a href="index.html" class="back-link" aria-label="ホームへ戻る">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -92,168 +89,27 @@
 </article>
 
 <script src="js/theme-toggle.js"></script>
+<script src="js/post-common.js"></script>
 
 <script>
 // =============================================
-// ComponentLoader
-// CSS / JS を動的に <head> へ挿入する。
-// 同じ URL は一度しか挿入しない（Setで管理）。
-// =============================================
-const ComponentLoader = (() => {
-  const loaded = new Set();
-
-  function loadCSS(href) {
-    if (loaded.has(href)) return Promise.resolve();
-    return new Promise(resolve => {
-      const el  = document.createElement('link');
-      el.rel    = 'stylesheet';
-      el.href   = href;
-      el.onload = el.onerror = () => { loaded.add(href); resolve(); };
-      document.head.appendChild(el);
-    });
-  }
-
-  function loadJS(src) {
-    if (loaded.has(src)) return Promise.resolve();
-    return new Promise(resolve => {
-      const el   = document.createElement('script');
-      el.src     = src;
-      el.onload  = el.onerror = () => { loaded.add(src); resolve(); };
-      document.head.appendChild(el);
-    });
-  }
-
-  return { loadCSS, loadJS };
-})();
-
-// =============================================
-// loadComponents
-// post.components の true/false に従ってライブラリを読む。
-// =============================================
-async function loadComponents(components) {
-  const c    = components || {};
-  const jobs = [];
-
-  if (c.katex) {
-    // KaTeX: CSS → katex.min.js → auto-render.min.js の順序が必要
-    jobs.push(
-      ComponentLoader.loadCSS(
-        'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css'
-      ).then(() =>
-        ComponentLoader.loadJS(
-          'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js'
-        )
-      ).then(() =>
-        ComponentLoader.loadJS(
-          'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js'
-        )
-      )
-    );
-  }
-
-  if (c.highlight) {
-    const isDark  = document.body.classList.contains('dark');
-    const themeCDN = isDark
-      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
-      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
-
-    jobs.push(
-      ComponentLoader.loadCSS(themeCDN).then(() =>
-        ComponentLoader.loadJS(
-          'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'
-        )
-      )
-    );
-  }
-
-  await Promise.all(jobs);
-}
-
-// =============================================
-// TOC builder
-// =============================================
-// =============================================
-// TOC builder
-// =============================================
-function buildToc() {
-  const article  = document.getElementById('article');
-  // #tocBox・#toc 内の見出し（「目次」自体）を除外する
-  const headings = [...article.querySelectorAll('h2, h3, h4')]
-    .filter(h => !h.closest('#tocBox, #toc'));
-
-  if (!headings.length) return;
-
-  const tocToggle = document.getElementById('tocToggle');
-  const tocBoxEl  = document.getElementById('tocBox');
-  const tocList   = document.getElementById('tocList');
-  const tocBox    = tocBoxEl.querySelector('ul');
-
-  tocToggle.style.display = '';
-  tocBoxEl.style.display  = '';
-
-  headings.forEach((h, i) => {
-    const id = 'section-' + i;
-    h.id = id;
-
-    const makeLink = () => {
-      const a       = document.createElement('a');
-      a.href        = '#' + id;
-      a.textContent = h.textContent;
-      if (h.tagName === 'H3') a.classList.add('h3');
-      if (h.tagName === 'H4') a.classList.add('h4');
-      return a;
-    };
-
-    tocList.appendChild(makeLink());
-
-    const li = document.createElement('li');
-    if (h.tagName === 'H3') li.classList.add('h3');
-    if (h.tagName === 'H4') li.classList.add('h4');
-    li.appendChild(makeLink());
-    tocBox.appendChild(li);
-  });
-
-  const overlay = document.getElementById('overlay');
-  const close   = () => document.body.classList.remove('toc-open');
-  tocToggle.addEventListener('click', () => document.body.classList.toggle('toc-open'));
-  overlay.addEventListener('click', close);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-
-  document.addEventListener('click', e => {
-    if (e.target.matches('.toc a, .toc-box a')) {
-      e.preventDefault();
-      const target = document.querySelector(e.target.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      close();
-    }
-  });
-
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      document.querySelectorAll('.toc a').forEach(a => a.classList.remove('active'));
-      const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
-      if (active) active.classList.add('active');
-    });
-  }, { rootMargin: '-40% 0px -50% 0px' });
-
-  headings.forEach(h => obs.observe(h));
-}
-// =============================================
-// Main
+// Main — fetch post from /api/post and render
 // =============================================
 async function loadPost() {
+  loaderStart();
+
   const params = new URLSearchParams(window.location.search);
   const slug   = params.get('slug');
 
   const showError = () => {
     document.getElementById('post-loading').style.display = 'none';
     document.getElementById('post-error').style.display   = '';
+    loaderDone();
   };
 
   if (!slug) { showError(); return; }
 
-  // 1. JSON フェッチ
+  // 1. Fetch post JSON
   let post;
   try {
     const res = await fetch(`/api/post?slug=${encodeURIComponent(slug)}`);
@@ -264,10 +120,10 @@ async function loadPost() {
     return;
   }
 
-  // 2. 必要なコンポーネントを先に読み込む（レンダリング前に揃える）
+  // 2. Load optional libraries before rendering
   await loadComponents(post.components);
 
-  // 3. メタデータを DOM に反映
+  // 3. Metadata
   document.title = (post.title || slug) + ' — My Notes';
 
   if (post.thumbnail) {
@@ -299,28 +155,24 @@ async function loadPost() {
     });
   }
 
-  // 6. Highlight.js + ダークモード追従
+  // 6. Highlight.js + dark mode watch
   if (post.components?.highlight && typeof hljs !== 'undefined') {
-    document.querySelectorAll('#post-body pre code').forEach(el => {
-      hljs.highlightElement(el);
-    });
-
-    // テーマ切り替え時に hljs の CSS も差し替える
+    document.querySelectorAll('#post-body pre code').forEach(el => hljs.highlightElement(el));
     new MutationObserver(() => {
       const dark  = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
       const light = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
-      ComponentLoader.loadCSS(
-        document.body.classList.contains('dark') ? dark : light
-      );
+      ComponentLoader.loadCSS(document.body.classList.contains('dark') ? dark : light);
     }).observe(document.body, { attributeFilter: ['class'] });
   }
 
-  // 7. 表示
+  // 7. Show content
   document.getElementById('post-loading').style.display = 'none';
   document.getElementById('post-content').style.display = '';
   document.getElementById('post-footer').style.display  = '';
 
-  // 8. TOC（コンテンツが DOM に入ってから）
+  loaderDone();
+
+  // 8. TOC (after content is in the DOM)
   buildToc();
 }
 
