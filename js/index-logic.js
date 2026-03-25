@@ -2,8 +2,8 @@
 // Supabase 設定
 // =====================================================
 const SUPABASE_CONFIG = {
-  url:     (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_URL      : '',
-  anonKey: (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG. SUPABASE_KEY : ''
+  url:     (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_URL  : '',
+  anonKey: (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_KEY  : ''
 };
 
 // =====================================================
@@ -15,12 +15,20 @@ function formatDateStr(dateStr) {
   return y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
 }
 
+// slug から href を生成（新slug方式 + 旧outputFile の両方に対応）
+function resolveHref(post) {
+  if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}`;
+  // 後方互換: outputFile が posts/xxx.html 形式だった旧データ
+  if (post.outputFile) return post.outputFile;
+  return '#';
+}
+
 // =====================================================
 // カード生成
 // =====================================================
 function createPublicCard(p) {
   const a = document.createElement('a');
-  a.href             = 'posts/' + p.outputFile;
+  a.href             = resolveHref(p);
   a.className        = 'card';
   a.dataset.date     = p.date     || '';
   a.dataset.category = p.category || '';
@@ -67,13 +75,22 @@ async function initialize() {
   const countEl   = document.getElementById('posts-count');
   const tocList   = document.getElementById('tocList');
 
-  // 1. 全カードをメモリに収集（公開記事）
-  const allCards = (window.PUBLIC_POSTS || []).map(p => ({
+  // 1. 公開記事一覧を /api/posts から取得
+  let publicPosts = [];
+  try {
+    const res = await fetch('/api/posts');
+    if (res.ok) publicPosts = await res.json();
+  } catch (e) {
+    console.warn('Failed to fetch /api/posts:', e);
+    // フォールバック: home-data.js が残っていればそちらを使う
+    publicPosts = window.PUBLIC_POSTS || [];
+  }
+  const allCards = publicPosts.map(p => ({
     card: createPublicCard(p),
     date: p.date || ''
   }));
 
-  // 2. Supabase が有効なら保護記事を追加
+  // 2. Supabaseが有効なら保護記事を追加
   if (SUPABASE_CONFIG.url && !SUPABASE_CONFIG.url.includes('your-project')) {
     try {
       const client = new SupabaseClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
@@ -86,7 +103,8 @@ async function initialize() {
           });
         });
         if (countEl) {
-          countEl.textContent = ((window.PUBLIC_POSTS || []).length + result.posts.length) + ' posts';
+          countEl.textContent =
+            (publicPosts.length + result.posts.length) + ' posts';
         }
       }
     } catch (e) {
@@ -97,12 +115,12 @@ async function initialize() {
   // 3. 日付降順ソート
   allCards.sort((a, b) => b.date.localeCompare(a.date));
 
-  // 4. カテゴリ収集（重複なし・空除外）
+  // 4. カテゴリ収集
   const categories = [...new Set(
     allCards.map(({ card }) => card.dataset.category).filter(Boolean)
   )].sort();
 
-  // 5. サイドバー：カテゴリフィルター + Posts 一覧を生成
+  // 5. サイドバー：カテゴリフィルター + Posts 一覧
   if (tocList) {
     if (categories.length > 0) {
       const filterWrap = document.createElement('div');
@@ -122,8 +140,12 @@ async function initialize() {
           border-bottom: 2px solid transparent;
           transition: color 0.2s, border-color 0.2s;
         `;
-        btn.addEventListener('mouseenter', () => { if (!btn.classList.contains('active')) btn.style.color = 'var(--text)'; });
-        btn.addEventListener('mouseleave', () => { if (!btn.classList.contains('active')) btn.style.color = 'var(--sub)'; });
+        btn.addEventListener('mouseenter', () => {
+          if (!btn.classList.contains('active')) btn.style.color = 'var(--text)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          if (!btn.classList.contains('active')) btn.style.color = 'var(--sub)';
+        });
         return btn;
       };
 
@@ -149,10 +171,12 @@ async function initialize() {
         btn.style.borderBottomColor = 'var(--accent)';
 
         container.querySelectorAll('.card').forEach(card => {
-          card.style.display = (!selected || card.dataset.category === selected) ? '' : 'none';
+          card.style.display =
+            (!selected || card.dataset.category === selected) ? '' : 'none';
         });
         tocList.querySelectorAll('a[data-cat]').forEach(a => {
-          a.style.display = (!selected || a.dataset.cat === selected) ? '' : 'none';
+          a.style.display =
+            (!selected || a.dataset.cat === selected) ? '' : 'none';
         });
       });
 
@@ -168,7 +192,10 @@ async function initialize() {
     });
   }
 
-  // 6. カードをすべてレンダリング
+  // 6. カードをレンダリング
+  if (countEl && !countEl.textContent.includes('posts')) {
+    countEl.textContent = allCards.length + ' posts';
+  }
   allCards.forEach(({ card }) => container.appendChild(card));
 }
 
@@ -177,7 +204,7 @@ document.addEventListener('DOMContentLoaded', initialize);
 // =====================================================
 // サイドバー開閉
 // =====================================================
-(function() {
+(function () {
   const toggle  = document.getElementById('tocToggle');
   const overlay = document.getElementById('overlay');
   if (!toggle || !overlay) return;

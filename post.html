@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <!--
     KaTeX / Highlight.js はここでは読み込まない。
-    posts-data/{slug}.json の components フィールドを見てから
+    /api/post?slug= のレスポンス JSON の components フィールドを見てから
     動的に挿入する（loadComponents() 参照）。
   -->
   <!-- marked.js は全記事で必要なので静的読み込み -->
@@ -251,7 +251,7 @@ async function loadPost() {
   // 1. JSON フェッチ
   let post;
   try {
-    const res = await fetch(`posts-data/${slug}.json`);
+    const res = await fetch(`/api/post?slug=${encodeURIComponent(slug)}`);
     if (!res.ok) throw new Error('not found');
     post = await res.json();
   } catch {

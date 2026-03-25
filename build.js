@@ -1,198 +1,79 @@
 #!/usr/bin/env node
 /**
- * build.js — 451-docs ビルドスクリプト（slug方式対応版）
+ * build.js — 451-docs ローカル開発補助スクリプト
  *
- * 役割:
- *   1. content/posts/*.md を読む
- *   2. frontmatter + 本文を抽出
- *   3. posts-data/{slug}.json を生成（post.html?slug=xxx が fetch する）
- *   4. posts.json を更新（index.html のカード表示用メタデータ一覧）
- *   5. js/home-data.js を更新（後方互換のため維持）
+ * 本番は Netlify Functions (/api/posts, /api/post) が
+ * md-contents リポジトリから直接 Markdown を取得する。
+ *
+ * このスクリプトはローカル開発時にのみ使用する：
+ *   - content/posts/*.md を読んで posts-data/{slug}.json を生成
+ *   - netlify dev が Functions を実行できない環境向けのフォールバック
+ *
+ * 通常のローカル開発は `netlify dev` を使うこと（Functions + GitHub API を使う）。
  *
  * 使い方:
- *   node build.js            通常ビルド
- *   node build.js --watch    ウォッチモード（content/posts/ を監視）
+ *   node build.js            ビルド（content/posts/ → posts-data/）
+ *   node build.js --watch    ウォッチモード
  */
 
 const fs   = require('fs');
 const path = require('path');
+const { buildPostData } = require('./netlify/functions/_lib/frontmatter');
 
-// =============================================
-// 設定
-// =============================================
 const CONTENT_DIR  = path.join(__dirname, 'content', 'posts');
 const OUTPUT_DIR   = path.join(__dirname, 'posts-data');
 const POSTS_JSON   = path.join(__dirname, 'posts.json');
 const HOME_DATA_JS = path.join(__dirname, 'js', 'home-data.js');
 
-// =============================================
-// frontmatter パーサー
-// =============================================
-function parseFrontmatter(raw) {
-  const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
-  if (!match) return { meta: {}, content: raw };
-
-  const meta = {};
-  let currentBlock = null; // ネストブロック名（例: "components"）
-
-  match[1].split('\n').forEach(line => {
-    // インデントありの行 → 直前のブロックの子キー
-    if (/^\s+\S/.test(line)) {
-      if (!currentBlock) return;
-      const colon = line.indexOf(':');
-      if (colon === -1) return;
-      const key   = line.slice(0, colon).trim();
-      const value = line.slice(colon + 1).trim();
-      if (key) meta[currentBlock][key] = value === 'true'  ? true
-                                       : value === 'false' ? false
-                                       : value;
-      return;
-    }
-
-    // トップレベルの行
-    currentBlock = null;
-    const colon = line.indexOf(':');
-    if (colon === -1) return;
-    const key   = line.slice(0, colon).trim();
-    const value = line.slice(colon + 1).trim();
-    if (!key) return;
-
-    if (value === '') {
-      // 値なし → ネストブロック開始（例: "components:"）
-      meta[key] = {};
-      currentBlock = key;
-    } else {
-      meta[key] = value;
-    }
-  });
-
-  return { meta, content: match[2] };
-}
-
-// components のデフォルト値
-const DEFAULT_COMPONENTS = {
-  katex:     false,
-  highlight: false,
-};
-
-// =============================================
-// slug → filename（拡張子を除いたファイル名をそのまま使う）
-// =============================================
-function fileToSlug(filename) {
-  return filename.replace(/\.md$/i, '');
-}
-
-// =============================================
-// 1ファイルのビルド
-// =============================================
 function buildFile(filename) {
-  const filePath = path.join(CONTENT_DIR, filename);
-  const slug     = fileToSlug(filename);
-  const raw      = fs.readFileSync(filePath, 'utf-8');
-  const { meta, content } = parseFrontmatter(raw);
-
-  // components: frontmatterの指定をデフォルトにマージ
-  const components = Object.assign(
-    {},
-    DEFAULT_COMPONENTS,
-    typeof meta.components === 'object' ? meta.components : {}
-  );
-
-  const postData = {
-    slug,
-    title:       meta.title       || slug,
-    date:        meta.date        || '',
-    description: meta.description || '',
-    thumbnail:   meta.thumbnail   || '',
-    category:    meta.category    || '',
-    components,
-    content,   // Markdown本文（フロントエンドでmarked.jsがレンダリング）
-  };
-
-  // posts-data/{slug}.json を書き出し
+  const raw      = fs.readFileSync(path.join(CONTENT_DIR, filename), 'utf-8');
+  const postData = buildPostData(filename, raw);
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   fs.writeFileSync(
-    path.join(OUTPUT_DIR, `${slug}.json`),
-    JSON.stringify(postData, null, 2),
-    'utf-8'
+    path.join(OUTPUT_DIR, `${postData.slug}.json`),
+    JSON.stringify(postData, null, 2), 'utf-8'
   );
-
-  console.log(`  built: posts-data/${slug}.json`);
+  console.log(`  built: posts-data/${postData.slug}.json`);
   return postData;
 }
 
-// =============================================
-// posts.json + js/home-data.js を更新
-// =============================================
 function updateIndex(allPosts) {
-  // 日付降順ソート
-  const sorted = [...allPosts].sort((a, b) => b.date.localeCompare(a.date));
-
-  // posts.json（メタデータのみ、contentは含めない）
-  const metaList = sorted.map(({ slug, title, date, description, thumbnail, category }) => ({
-    slug, title, date, description, thumbnail, category,
-    // 後方互換：index-logic.js は outputFile を参照している
-    outputFile: `../post.html?slug=${slug}`,
+  const sorted   = [...allPosts].sort((a, b) => b.date.localeCompare(a.date));
+  const metaList = sorted.map(({ slug, title, date, description, thumbnail, category, components }) => ({
+    slug, title, date, description, thumbnail, category, components,
   }));
-
   fs.writeFileSync(POSTS_JSON, JSON.stringify(metaList, null, 2), 'utf-8');
   console.log(`  updated: posts.json (${metaList.length} posts)`);
-
-  // js/home-data.js（index.htmlから script タグで読み込む）
-  const js = `// Auto-generated by build.js — DO NOT EDIT MANUALLY\nwindow.PUBLIC_POSTS = ${JSON.stringify(metaList, null, 2)};\n`;
+  const js = `// Auto-generated by build.js (local dev only) — DO NOT COMMIT\nwindow.PUBLIC_POSTS = ${JSON.stringify(metaList, null, 2)};\n`;
   fs.writeFileSync(HOME_DATA_JS, js, 'utf-8');
-  console.log(`  updated: js/home-data.js`);
+  console.log(`  updated: js/home-data.js (local dev fallback)`);
 }
 
-// =============================================
-// フルビルド
-// =============================================
 function buildAll() {
-  console.log('\n▶ build.js — full build');
-
+  console.log('\n▶ build.js — local dev build');
   if (!fs.existsSync(CONTENT_DIR)) {
-    console.error(`  ERROR: content directory not found: ${CONTENT_DIR}`);
-    console.error('  MDファイルを content/posts/ に置いてください。');
+    console.error(`  ERROR: ${CONTENT_DIR} not found.`);
+    console.error('  Place .md files in content/posts/ for local dev,');
+    console.error('  or use `netlify dev` to test against the live GitHub API.');
     process.exit(1);
   }
-
   const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.md'));
-  if (files.length === 0) {
-    console.log('  No .md files found. Nothing to build.');
-    updateIndex([]);
-    return;
-  }
-
+  if (files.length === 0) { console.log('  No .md files found.'); updateIndex([]); return; }
   const allPosts = files.map(buildFile);
   updateIndex(allPosts);
-
   console.log(`✓ Done. ${files.length} post(s) built.\n`);
 }
 
-// =============================================
-// ウォッチモード
-// =============================================
 function watchMode() {
   buildAll();
   console.log(`👀 Watching ${CONTENT_DIR} …`);
-
-  fs.watch(CONTENT_DIR, (eventType, filename) => {
-    if (!filename || !filename.endsWith('.md')) return;
+  fs.watch(CONTENT_DIR, (_, filename) => {
+    if (!filename?.endsWith('.md')) return;
     console.log(`\n  change detected: ${filename}`);
-    try {
-      buildAll();
-    } catch (e) {
-      console.error('  build error:', e.message);
-    }
+    try { buildAll(); } catch (e) { console.error('  build error:', e.message); }
   });
 }
 
-// =============================================
-// Entry point
-// =============================================
 const args = process.argv.slice(2);
-if (args.includes('--watch')) {
-  watchMode();
-} else {
-  buildAll();
-}
+if (args.includes('--watch')) watchMode();
+else buildAll();
