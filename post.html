@@ -10,22 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/theme.css">
-  <!-- KaTeX -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <!-- Highlight.js -->
-  <link rel="stylesheet" id="hljs-light"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-  <link rel="stylesheet" id="hljs-dark"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
-    disabled>
-  <!-- marked.js -->
+  <!--
+    KaTeX / Highlight.js はここでは読み込まない。
+    posts-data/{slug}.json の components フィールドを見てから
+    動的に挿入する（loadComponents() 参照）。
+  -->
+  <!-- marked.js は全記事で必要なので静的読み込み -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 
-<!-- Back -->
 <a href="index.html" class="back-link" aria-label="ホームへ戻る">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
        stroke-linecap="round" stroke-linejoin="round">
@@ -34,7 +28,6 @@
   <span>Home</span>
 </a>
 
-<!-- Dark mode toggle -->
 <span class="logo-switches">
   <button id="theme-toggle" aria-label="Toggle Theme">
     <svg id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -66,15 +59,12 @@
   <nav id="tocList"></nav>
 </aside>
 
-<!-- Article -->
 <article class="article" id="article">
 
-  <!-- Loading state -->
   <div id="post-loading" style="text-align:center; padding:80px 0; color:var(--sub);">
     読み込み中…
   </div>
 
-  <!-- Error state (hidden by default) -->
   <div id="post-error" style="display:none; text-align:center; padding:80px 0;">
     <p style="color:var(--sub); font-size:1.1rem;">記事が見つかりませんでした。</p>
     <p style="margin-top:12px;">
@@ -82,7 +72,6 @@
     </p>
   </div>
 
-  <!-- Post content (hidden until loaded) -->
   <div id="post-content" style="display:none;">
     <img id="post-thumbnail" class="thumbnail" alt="" style="display:none;">
     <h1 id="post-title"></h1>
@@ -103,23 +92,82 @@
 </article>
 
 <script src="js/theme-toggle.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
 <script>
 // =============================================
-// Highlight.js theme sync
+// ComponentLoader
+// CSS / JS を動的に <head> へ挿入する。
+// 同じ URL は一度しか挿入しない（Setで管理）。
 // =============================================
-(function () {
-  const light = document.getElementById('hljs-light');
-  const dark  = document.getElementById('hljs-dark');
-  function syncTheme() {
-    const isDark = document.body.classList.contains('dark');
-    light.disabled = isDark;
-    dark.disabled  = !isDark;
+const ComponentLoader = (() => {
+  const loaded = new Set();
+
+  function loadCSS(href) {
+    if (loaded.has(href)) return Promise.resolve();
+    return new Promise(resolve => {
+      const el  = document.createElement('link');
+      el.rel    = 'stylesheet';
+      el.href   = href;
+      el.onload = el.onerror = () => { loaded.add(href); resolve(); };
+      document.head.appendChild(el);
+    });
   }
-  syncTheme();
-  new MutationObserver(syncTheme).observe(document.body, { attributeFilter: ['class'] });
+
+  function loadJS(src) {
+    if (loaded.has(src)) return Promise.resolve();
+    return new Promise(resolve => {
+      const el   = document.createElement('script');
+      el.src     = src;
+      el.onload  = el.onerror = () => { loaded.add(src); resolve(); };
+      document.head.appendChild(el);
+    });
+  }
+
+  return { loadCSS, loadJS };
 })();
+
+// =============================================
+// loadComponents
+// post.components の true/false に従ってライブラリを読む。
+// =============================================
+async function loadComponents(components) {
+  const c    = components || {};
+  const jobs = [];
+
+  if (c.katex) {
+    // KaTeX: CSS → katex.min.js → auto-render.min.js の順序が必要
+    jobs.push(
+      ComponentLoader.loadCSS(
+        'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css'
+      ).then(() =>
+        ComponentLoader.loadJS(
+          'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js'
+        )
+      ).then(() =>
+        ComponentLoader.loadJS(
+          'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js'
+        )
+      )
+    );
+  }
+
+  if (c.highlight) {
+    const isDark  = document.body.classList.contains('dark');
+    const themeCDN = isDark
+      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
+      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+
+    jobs.push(
+      ComponentLoader.loadCSS(themeCDN).then(() =>
+        ComponentLoader.loadJS(
+          'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'
+        )
+      )
+    );
+  }
+
+  await Promise.all(jobs);
+}
 
 // =============================================
 // TOC builder
@@ -142,8 +190,8 @@ function buildToc() {
     h.id = id;
 
     const makeLink = () => {
-      const a = document.createElement('a');
-      a.href = '#' + id;
+      const a       = document.createElement('a');
+      a.href        = '#' + id;
       a.textContent = h.textContent;
       if (h.tagName === 'H3') a.classList.add('h3');
       if (h.tagName === 'H4') a.classList.add('h4');
@@ -159,9 +207,8 @@ function buildToc() {
     tocBox.appendChild(li);
   });
 
-  // Sidebar open/close
   const overlay = document.getElementById('overlay');
-  const close = () => document.body.classList.remove('toc-open');
+  const close   = () => document.body.classList.remove('toc-open');
   tocToggle.addEventListener('click', () => document.body.classList.toggle('toc-open'));
   overlay.addEventListener('click', close);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
@@ -175,14 +222,12 @@ function buildToc() {
     }
   });
 
-  // Active highlight
   const obs = new IntersectionObserver(entries => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        document.querySelectorAll('.toc a').forEach(a => a.classList.remove('active'));
-        const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
-        if (active) active.classList.add('active');
-      }
+      if (!entry.isIntersecting) return;
+      document.querySelectorAll('.toc a').forEach(a => a.classList.remove('active'));
+      const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
     });
   }, { rootMargin: '-40% 0px -50% 0px' });
 
@@ -190,7 +235,7 @@ function buildToc() {
 }
 
 // =============================================
-// Main: load post from posts-data/{slug}.json
+// Main
 // =============================================
 async function loadPost() {
   const params = new URLSearchParams(window.location.search);
@@ -203,60 +248,74 @@ async function loadPost() {
 
   if (!slug) { showError(); return; }
 
-  let meta;
+  // 1. JSON フェッチ
+  let post;
   try {
-    // posts-data/{slug}.json には frontmatter + md本文を格納
     const res = await fetch(`posts-data/${slug}.json`);
     if (!res.ok) throw new Error('not found');
-    meta = await res.json();
+    post = await res.json();
   } catch {
     showError();
     return;
   }
 
-  // --- Populate ---
-  document.title = (meta.title || slug) + ' — My Notes';
+  // 2. 必要なコンポーネントを先に読み込む（レンダリング前に揃える）
+  await loadComponents(post.components);
 
-  if (meta.thumbnail) {
-    const img = document.getElementById('post-thumbnail');
-    img.src   = meta.thumbnail;
+  // 3. メタデータを DOM に反映
+  document.title = (post.title || slug) + ' — My Notes';
+
+  if (post.thumbnail) {
+    const img         = document.getElementById('post-thumbnail');
+    img.src           = post.thumbnail;
     img.style.display = '';
   }
 
-  document.getElementById('post-title').textContent = meta.title || slug;
+  document.getElementById('post-title').textContent = post.title || slug;
 
-  if (meta.date) {
-    const [y, m, d] = meta.date.split('-');
+  if (post.date) {
+    const [y, m, d] = post.date.split('-');
     document.getElementById('post-date').textContent =
-      y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
+      `${y}年${parseInt(m)}月${parseInt(d)}日`;
   }
 
-  // Render Markdown
+  // 4. Markdown → HTML
   marked.use({ mangle: false, headerIds: false });
-  document.getElementById('post-body').innerHTML = marked.parse(meta.content || '');
+  document.getElementById('post-body').innerHTML = marked.parse(post.content || '');
 
-  // KaTeX
-  if (typeof renderMathInElement !== 'undefined') {
+  // 5. KaTeX
+  if (post.components?.katex && typeof renderMathInElement !== 'undefined') {
     renderMathInElement(document.getElementById('post-body'), {
       delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '$',  right: '$',  display: false }
+        { left: '$$', right: '$$', display: true  },
+        { left: '$',  right: '$',  display: false },
       ],
-      throwOnError: false
+      throwOnError: false,
     });
   }
 
-  // Highlight.js
-  document.querySelectorAll('#post-body pre code').forEach(block => {
-    hljs.highlightElement(block);
-  });
+  // 6. Highlight.js + ダークモード追従
+  if (post.components?.highlight && typeof hljs !== 'undefined') {
+    document.querySelectorAll('#post-body pre code').forEach(el => {
+      hljs.highlightElement(el);
+    });
 
-  // Show content
+    // テーマ切り替え時に hljs の CSS も差し替える
+    new MutationObserver(() => {
+      const dark  = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+      const light = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+      ComponentLoader.loadCSS(
+        document.body.classList.contains('dark') ? dark : light
+      );
+    }).observe(document.body, { attributeFilter: ['class'] });
+  }
+
+  // 7. 表示
   document.getElementById('post-loading').style.display = 'none';
   document.getElementById('post-content').style.display = '';
   document.getElementById('post-footer').style.display  = '';
 
-  // Build TOC after content is in the DOM
+  // 8. TOC（コンテンツが DOM に入ってから）
   buildToc();
 }
 

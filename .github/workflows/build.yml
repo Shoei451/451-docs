@@ -8,7 +8,7 @@ on:
   push:
     branches: [main]
 
-  # 2. md-contents（private）からの通知を受け取ったとき
+  # 2. 451-docs-content（private）からの通知を受け取ったとき
   #    content側のworkflowから repository_dispatch を飛ばす
   repository_dispatch:
     types: [content-updated]
@@ -28,21 +28,21 @@ jobs:
       - name: Checkout 451-docs
         uses: actions/checkout@v4
 
-      # ── Step 2: md-contents（private）からMDを取得 ──
+      # ── Step 2: md-contents（private）から 451-docs の公開記事を取得 ──
       # PAT は 451-docs の Settings > Secrets > CONTENT_REPO_PAT に設定する
-      - name: Fetch content from private repo
+      - name: Fetch content from md-contents
         env:
           CONTENT_PAT: ${{ secrets.CONTENT_REPO_PAT }}
         run: |
           git clone \
             https://x-access-token:${CONTENT_PAT}@github.com/Shoei451/md-contents.git \
             _content_tmp
-          # MDファイルを 451-docs/public_posts にコピー
-          mkdir -p 451-docs/public_posts
-          cp -r _content_tmp/posts/. 451-docs/public_posts/
+          # 451-docs/public_posts/ を content/posts/ にコピー
+          mkdir -p content/posts
+          cp -r _content_tmp/451-docs/public_posts/. content/posts/
           rm -rf _content_tmp
           echo "MD files copied:"
-          ls 451-docs/public_posts/
+          ls content/posts/
 
       # ── Step 3: Node.js セットアップ ──
       - name: Setup Node.js
@@ -52,7 +52,7 @@ jobs:
 
       # ── Step 4: ビルド ──
       - name: Run build
-        run: node scripts/build.js
+        run: node build.js
 
       # ── Step 5: 生成ファイルをコミット ──
       # posts-data/*.json, posts.json, js/home-data.js を自動コミット

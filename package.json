@@ -4,8 +4,8 @@
   "description": "Personal notes site — slug-based static site",
   "private": true,
   "scripts": {
-    "build": "node scripts/build.js",
-    "watch": "node scripts/build.js --watch",
+    "build": "node build.js",
+    "watch": "node build.js --watch",
     "dev": "netlify dev"
   },
   "engines": {
