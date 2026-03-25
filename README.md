@@ -152,7 +152,7 @@ Content updates in `md-contents` are live instantly without a Netlify deploy.
 
 ## Roadmap
 
-See [plan.md](./plan.md) for the full phased design.
+See [md/roadmap.md](./md/roadmap.md) for the execution roadmap and [md/plan.md](./md/plan.md) for the design summary.
 
 | Phase | Status | Description |
 |---|---|---|
