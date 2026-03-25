@@ -3,7 +3,7 @@
 // =====================================================
 const SUPABASE_CONFIG = {
   url:     (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_URL      : '',
-  anonKey: (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_ANON_KEY : ''
+  anonKey: (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG. SUPABASE_KEY : ''
 };
 
 // =====================================================

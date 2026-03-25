@@ -10,7 +10,7 @@ if (!slug) {
   document.getElementById('post-header').style.display = '';
 }
 
-const supabase      = new SupabaseClient(SITE_CONFIG.SUPABASE_URL, SITE_CONFIG.SUPABASE_ANON_KEY);
+const supabase      = new SupabaseClient(SITE_CONFIG.SUPABASE_URL, SITE_CONFIG. SUPABASE_KEY);
 const form          = document.getElementById('password-form');
 const passwordInput = document.getElementById('password-input');
 const passwordError = document.getElementById('password-error');

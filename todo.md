@@ -23,3 +23,4 @@ mdの移動を伴う機能は必要ない(更新をかけたい際にmdファイ
 - [ ] ファイル命名方式の改善(js/config.jsでは何のconfigか不明瞭)
 - [ ] jsファイルの共通化(部品として)
 - [ ] filetree.md自動ビルド(Github Actionsでの実装、この実装は451-websiteからのコピペで済む)
+- [ ] supabase接続の一元化（いずれは廃止予定）
