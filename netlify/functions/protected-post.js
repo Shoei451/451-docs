@@ -2,84 +2,14 @@
  * Netlify Function: protected-post
  * Route: GET /api/protected-post?slug={slug}&password={raw_password}
  *
- * Verifies password server-side against the frontmatter `password` field
- * in md-contents/451-docs/protected_posts/{slug}.md.
+ * Verifies password server-side against frontmatter `password` field.
  * Never returns the password field to the client.
  */
 
-const REPO = 'Shoei451/md-contents';
-const BASE = '451-docs/protected_posts';
-const API  = 'https://api.github.com';
+const { fetchRaw }              = require('./_lib/github');
+const { buildPostData, getPassword } = require('./_lib/frontmatter');
 
-function ghHeaders() {
-  const token = process.env.GITHUB_TOKEN;
-  return {
-    'Accept':               'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-
-async function fetchRaw(slug) {
-  const res = await fetch(
-    `${API}/repos/${REPO}/contents/${BASE}/${slug}.md`,
-    { headers: ghHeaders() }
-  );
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
-  const json = await res.json();
-  return Buffer.from(json.content, 'base64').toString('utf-8');
-}
-
-// ── Frontmatter parser ──
-function parseFrontmatter(raw) {
-  const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
-  if (!match) return { meta: {}, content: raw };
-
-  const meta = {};
-  let block = null;
-
-  for (const line of match[1].split('\n')) {
-    if (/^\s+\S/.test(line)) {
-      if (!block) continue;
-      const c = line.indexOf(':');
-      if (c === -1) continue;
-      const k = line.slice(0, c).trim();
-      const v = line.slice(c + 1).trim();
-      if (k) meta[block][k] = v === 'true' ? true : v === 'false' ? false : v;
-      continue;
-    }
-    block = null;
-    const c = line.indexOf(':');
-    if (c === -1) continue;
-    const k = line.slice(0, c).trim();
-    const v = line.slice(c + 1).trim();
-    if (!k) continue;
-    if (v === '') { meta[k] = {}; block = k; } else { meta[k] = v; }
-  }
-
-  return { meta, content: match[2] };
-}
-
-const DEFAULT_COMPONENTS = { katex: false, highlight: false };
-
-function buildPostData(slug, rawMd) {
-  const { meta, content } = parseFrontmatter(rawMd);
-
-  // Never expose the password field
-  return {
-    slug,
-    title:       meta.title       || slug,
-    date:        meta.date        || '',
-    excerpt:     meta.excerpt     || '',
-    category:    meta.category    || '',
-    tags:        meta.tags ? meta.tags.split(',').map(t => t.trim()) : [],
-    thumbnail:   meta.thumbnail   || '',
-    components:  Object.assign({}, DEFAULT_COMPONENTS,
-                   typeof meta.components === 'object' ? meta.components : {}),
-    content,
-  };
-}
+const BASE = '451-docs/private_posts';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -106,26 +36,22 @@ exports.handler = async (event) => {
   }
 
   try {
-    const raw = await fetchRaw(slug);
+    const raw = await fetchRaw(BASE, slug);
 
+    // Same 401 for "not found" and "wrong password" — don't leak post existence
     if (!raw) {
-      // Same response as wrong password — don't reveal whether the post exists
       return { statusCode: 401, headers: CORS,
                body: JSON.stringify({ error: 'Invalid password or post not found.' }) };
     }
 
-    const { meta } = parseFrontmatter(raw);
-
-    if (!meta.password || meta.password !== password) {
+    const storedPassword = getPassword(raw);
+    if (!storedPassword || storedPassword !== password) {
       return { statusCode: 401, headers: CORS,
                body: JSON.stringify({ error: 'Invalid password or post not found.' }) };
     }
 
-    return {
-      statusCode: 200,
-      headers: CORS,
-      body: JSON.stringify(buildPostData(slug, raw)),
-    };
+    return { statusCode: 200, headers: CORS,
+             body: JSON.stringify(buildPostData(`${slug}.md`, raw)) };
 
   } catch (err) {
     console.error('[protected-post] error:', err);
