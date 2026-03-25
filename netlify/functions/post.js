@@ -3,7 +3,10 @@
  * Route: GET /api/post?slug={slug}
  *
  * Returns full post JSON including Markdown content.
- * _lib/ helpers are inlined to avoid Netlify bundler path issues.
+ * Reads from md-contents/451-docs/public_posts/ via GitHub API.
+ *
+ * NOTE: _lib/ helpers are intentionally inlined here to avoid
+ * Netlify bundler issues with local require() resolution.
  */
 
 // ── GitHub API ──────────────────────────────────────────
@@ -20,9 +23,8 @@ function ghHeaders() {
   };
 }
 
-async function fetchPost(slug) {
-  const url = `${API}/repos/${REPO}/contents/${BASE}/${slug}.md`;
-  const res = await fetch(url, { headers: ghHeaders() });
+async function fetchRaw(slug) {
+  const res = await fetch(`${API}/repos/${REPO}/contents/${BASE}/${slug}.md`, { headers: ghHeaders() });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
   const json = await res.json();
@@ -32,17 +34,12 @@ async function fetchPost(slug) {
 // ── Frontmatter parser ──────────────────────────────────
 const DEFAULT_COMPONENTS = { katex: false, highlight: false };
 
-function buildPostData(filename, rawMd) {
-  const slug  = filename.replace(/\.md$/i, '');
-  const match = rawMd.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
-
-  if (!match) {
-    return { slug, title: slug, date: '', description: '', thumbnail: '',
-             category: '', components: { ...DEFAULT_COMPONENTS }, content: rawMd };
-  }
+function parseFrontmatter(raw) {
+  const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+  if (!match) return { meta: {}, content: raw };
 
   const meta = {};
-  let block  = null;
+  let block = null;
 
   for (const line of match[1].split('\n')) {
     if (/^\s+\S/.test(line)) {
@@ -63,6 +60,12 @@ function buildPostData(filename, rawMd) {
     if (v === '') { meta[k] = {}; block = k; } else { meta[k] = v; }
   }
 
+  return { meta, content: match[2] };
+}
+
+function buildPostData(slug, rawMd) {
+  const { meta, content } = parseFrontmatter(rawMd);
+
   return {
     slug,
     title:       meta.title       || slug,
@@ -72,7 +75,7 @@ function buildPostData(filename, rawMd) {
     category:    meta.category    || '',
     components:  Object.assign({}, DEFAULT_COMPONENTS,
                    typeof meta.components === 'object' ? meta.components : {}),
-    content:     match[2],
+    content,
   };
 }
 
@@ -95,13 +98,13 @@ exports.handler = async (event) => {
   }
 
   try {
-    const raw = await fetchPost(slug);
+    const raw = await fetchRaw(slug);
     if (!raw) {
       return { statusCode: 404, headers: CORS,
                body: JSON.stringify({ error: 'Post not found.' }) };
     }
     return { statusCode: 200, headers: CORS,
-             body: JSON.stringify(buildPostData(`${slug}.md`, raw)) };
+             body: JSON.stringify(buildPostData(slug, raw)) };
   } catch (err) {
     console.error('[post] error:', err);
     return { statusCode: 502, headers: CORS,
