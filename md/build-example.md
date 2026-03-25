@@ -1,3 +1,5 @@
+
+```yml
 name: Build & Deploy
 
 # ─────────────────────────────────────────────
@@ -8,7 +10,7 @@ on:
   push:
     branches: [main]
 
-  # 2. md-contents（private）からの通知を受け取ったとき
+  # 2. 451-docs-content（private）からの通知を受け取ったとき
   #    content側のworkflowから repository_dispatch を飛ばす
   repository_dispatch:
     types: [content-updated]
@@ -45,8 +47,24 @@ jobs:
           ls content/posts/
 
       # ── Step 3: Node.js セットアップ ──
-      # This step is deleted'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       # ── Step 4: ビルド ──
       - name: Run build
         run: echo "This step is omitted"
+
+      # ── Step 5: 生成ファイルをコミット ──
+      # posts-data/*.json, posts.json, js/home-data.js を自動コミット
+      - name: Commit generated files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts-data/ posts.json js/home-data.js
+          # 差分がないときはスキップ
+          git diff --cached --quiet && echo "No changes to commit" || \
+            git commit -m "chore: rebuild posts-data [skip ci]"
+          git push
+```
