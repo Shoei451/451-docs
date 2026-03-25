@@ -172,9 +172,15 @@ async function loadComponents(components) {
 // =============================================
 // TOC builder
 // =============================================
+// =============================================
+// TOC builder
+// =============================================
 function buildToc() {
   const article  = document.getElementById('article');
-  const headings = article.querySelectorAll('h2, h3, h4');
+  // #tocBox・#toc 内の見出し（「目次」自体）を除外する
+  const headings = [...article.querySelectorAll('h2, h3, h4')]
+    .filter(h => !h.closest('#tocBox, #toc'));
+
   if (!headings.length) return;
 
   const tocToggle = document.getElementById('tocToggle');
@@ -233,7 +239,6 @@ function buildToc() {
 
   headings.forEach(h => obs.observe(h));
 }
-
 // =============================================
 // Main
 // =============================================

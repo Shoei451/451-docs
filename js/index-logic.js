@@ -1,12 +1,4 @@
 // =====================================================
-// Supabase 設定
-// =====================================================
-const SUPABASE_CONFIG = {
-  url:     (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_URL  : '',
-  anonKey: (typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG.SUPABASE_KEY  : ''
-};
-
-// =====================================================
 // ユーティリティ
 // =====================================================
 function formatDateStr(dateStr) {
@@ -15,10 +7,8 @@ function formatDateStr(dateStr) {
   return y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
 }
 
-// slug から href を生成（新slug方式 + 旧outputFile の両方に対応）
 function resolveHref(post) {
   if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}`;
-  // 後方互換: outputFile が posts/xxx.html 形式だった旧データ
   if (post.outputFile) return post.outputFile;
   return '#';
 }
@@ -46,12 +36,10 @@ function createPublicCard(p) {
 }
 
 function createProtectedCard(p) {
-  const isoDate     = p.created_at ? p.created_at.slice(0, 10) : '';
-  const displayDate = p.created_at ? new Date(p.created_at).toLocaleDateString('ja-JP') : '';
   const a = document.createElement('a');
   a.href             = 'protected-post.html?slug=' + encodeURIComponent(p.slug);
   a.className        = 'card card--protected';
-  a.dataset.date     = isoDate;
+  a.dataset.date     = p.date     || '';
   a.dataset.category = p.category || '';
   a.innerHTML = `
     <div class="card-img-wrap">
@@ -61,7 +49,7 @@ function createProtectedCard(p) {
       <span class="card-protected-badge">Protected</span>
       <h2 class="card-title">${p.title}</h2>
       <p class="card-desc">${p.excerpt || 'パスワードで保護された記事です。'}</p>
-      <span class="card-date">${displayDate}</span>
+      <span class="card-date">${formatDateStr(p.date)}</span>
     </div>
   `;
   return a;
@@ -82,34 +70,28 @@ async function initialize() {
     if (res.ok) publicPosts = await res.json();
   } catch (e) {
     console.warn('Failed to fetch /api/posts:', e);
-    // フォールバック: home-data.js が残っていればそちらを使う
     publicPosts = window.PUBLIC_POSTS || [];
   }
+
   const allCards = publicPosts.map(p => ({
     card: createPublicCard(p),
-    date: p.date || ''
+    date: p.date || '',
   }));
 
-  // 2. Supabaseが有効なら保護記事を追加
-  if (SUPABASE_CONFIG.url && !SUPABASE_CONFIG.url.includes('your-project')) {
-    try {
-      const client = new SupabaseClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-      const result = await client.getProtectedPostsMeta();
-      if (result.success && result.posts.length > 0) {
-        result.posts.forEach(p => {
-          allCards.push({
-            card: createProtectedCard(p),
-            date: p.created_at ? p.created_at.slice(0, 10) : ''
-          });
+  // 2. 保護記事一覧を /api/protected-posts から取得
+  try {
+    const res = await fetch('/api/protected-posts');
+    if (res.ok) {
+      const protectedPosts = await res.json();
+      protectedPosts.forEach(p => {
+        allCards.push({
+          card: createProtectedCard(p),
+          date: p.date || '',
         });
-        if (countEl) {
-          countEl.textContent =
-            (publicPosts.length + result.posts.length) + ' posts';
-        }
-      }
-    } catch (e) {
-      console.warn('保護記事の取得に失敗しました:', e);
+      });
     }
+  } catch (e) {
+    console.warn('Failed to fetch /api/protected-posts:', e);
   }
 
   // 3. 日付降順ソート
@@ -193,9 +175,7 @@ async function initialize() {
   }
 
   // 6. カードをレンダリング
-  if (countEl && !countEl.textContent.includes('posts')) {
-    countEl.textContent = allCards.length + ' posts';
-  }
+  if (countEl) countEl.textContent = allCards.length + ' posts';
   allCards.forEach(({ card }) => container.appendChild(card));
 }
 

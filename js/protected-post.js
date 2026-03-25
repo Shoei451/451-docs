@@ -10,7 +10,6 @@ if (!slug) {
   document.getElementById('post-header').style.display = '';
 }
 
-const supabase      = new SupabaseClient(SITE_CONFIG.SUPABASE_URL, SITE_CONFIG. SUPABASE_KEY);
 const form          = document.getElementById('password-form');
 const passwordInput = document.getElementById('password-input');
 const passwordError = document.getElementById('password-error');
@@ -20,12 +19,98 @@ const submitText    = document.getElementById('submit-text');
 const contentEl     = document.getElementById('markdown-content');
 
 // =====================================================
-// 目次生成（レンダリング完了後に呼ぶ）
-// styles.css の .toc / .toc-box / .toc-toggle を使う
+// ComponentLoader（post.html と同じ実装）
+// =====================================================
+const ComponentLoader = (() => {
+  const loaded = new Set();
+
+  function loadCSS(href) {
+    if (loaded.has(href)) return Promise.resolve();
+    return new Promise(resolve => {
+      const el  = document.createElement('link');
+      el.rel    = 'stylesheet';
+      el.href   = href;
+      el.onload = el.onerror = () => { loaded.add(href); resolve(); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function loadJS(src) {
+    if (loaded.has(src)) return Promise.resolve();
+    return new Promise(resolve => {
+      const el   = document.createElement('script');
+      el.src     = src;
+      el.onload  = el.onerror = () => { loaded.add(src); resolve(); };
+      document.head.appendChild(el);
+    });
+  }
+
+  return { loadCSS, loadJS };
+})();
+
+async function loadComponents(components) {
+  const c    = components || {};
+  const jobs = [];
+
+  if (c.katex) {
+    jobs.push(
+      ComponentLoader.loadCSS(
+        'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css'
+      ).then(() =>
+        ComponentLoader.loadJS(
+          'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js'
+        )
+      ).then(() =>
+        ComponentLoader.loadJS(
+          'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js'
+        )
+      )
+    );
+  }
+
+  if (c.highlight) {
+    const isDark   = document.body.classList.contains('dark');
+    const themeCDN = isDark
+      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
+      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+    jobs.push(
+      ComponentLoader.loadCSS(themeCDN).then(() =>
+        ComponentLoader.loadJS(
+          'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'
+        )
+      )
+    );
+  }
+
+  await Promise.all(jobs);
+}
+
+// =====================================================
+// 保護記事を Netlify Function 経由で取得
+// =====================================================
+async function fetchProtectedPost(slug, password) {
+  const url = `/api/protected-post?slug=${encodeURIComponent(slug)}&password=${encodeURIComponent(password)}`;
+  const res = await fetch(url);
+
+  if (res.status === 401) return { success: false, error: 'invalid_password' };
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    return { success: false, error: body.error || 'server_error' };
+  }
+
+  const post = await res.json();
+  return { success: true, post };
+}
+
+// =====================================================
+// 目次生成
 // =====================================================
 function buildToc() {
   const article  = document.getElementById('article');
-  const headings = article.querySelectorAll('h1, h2, h3, h4');
+  // #tocBox・#toc 内の見出し（「目次」自体）を除外する
+  const headings = [...article.querySelectorAll('h2, h3, h4')]
+    .filter(h => !h.closest('#tocBox, #toc'));
+
   if (!headings.length) return;
 
   const tocToggle = document.getElementById('tocToggle');
@@ -44,18 +129,16 @@ function buildToc() {
       const a = document.createElement('a');
       a.href = '#' + id;
       a.textContent = heading.textContent;
-      if (heading.tagName === 'H2') a.classList.add('h2'); // ★
+      if (heading.tagName === 'H2') a.classList.add('h2');
       if (heading.tagName === 'H3') a.classList.add('h3');
       if (heading.tagName === 'H4') a.classList.add('h4');
       return a;
     };
 
-    // サイドバー
     tocList.appendChild(makeLink());
 
-    // インライン目次
     const li = document.createElement('li');
-    if (heading.tagName === 'H2') li.classList.add('h2'); // ★
+    if (heading.tagName === 'H2') li.classList.add('h2');
     if (heading.tagName === 'H3') li.classList.add('h3');
     if (heading.tagName === 'H4') li.classList.add('h4');
     li.appendChild(makeLink());
@@ -63,14 +146,13 @@ function buildToc() {
   });
 
   const overlay = document.getElementById('overlay');
-  const open  = () => document.body.classList.add('toc-open');
-  const close = () => document.body.classList.remove('toc-open');
+  const close   = () => document.body.classList.remove('toc-open');
 
   tocToggle.addEventListener('click', () => document.body.classList.toggle('toc-open'));
   overlay.addEventListener('click', close);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', e => {
     if (e.target.matches('.toc a, .toc-box a')) {
       e.preventDefault();
       const target = document.querySelector(e.target.getAttribute('href'));
@@ -79,7 +161,7 @@ function buildToc() {
     }
   });
 
-  const observer = new IntersectionObserver((entries) => {
+  const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         document.querySelectorAll('.toc a').forEach(a => a.classList.remove('active'));
@@ -91,66 +173,89 @@ function buildToc() {
 
   headings.forEach(h => observer.observe(h));
 }
+
+// =====================================================
+// 認証成功後の描画
+// =====================================================
+async function renderPost(post) {
+  // コンポーネントを先に読み込む
+  await loadComponents(post.components);
+
+  // ヘッダー
+  document.getElementById('post-title').textContent = post.title || slug;
+  document.title = (post.title || slug) + ' — My Notes';
+
+  if (post.date) {
+    const [y, m, d] = post.date.split('-');
+    document.getElementById('post-meta').textContent =
+      `${y}年${parseInt(m)}月${parseInt(d)}日`;
+  }
+
+  const tagsEl = document.getElementById('post-tags');
+  tagsEl.innerHTML = '';
+  (post.tags || []).forEach(tag => {
+    const span = document.createElement('span');
+    span.className = 'post-tag';
+    span.textContent = tag;
+    tagsEl.appendChild(span);
+  });
+
+  document.getElementById('post-header').style.display = '';
+
+  // Markdown → HTML
+  marked.use({ mangle: false, headerIds: false });
+  contentEl.innerHTML = marked.parse(post.content || '');
+
+  // KaTeX
+  if (post.components?.katex && typeof renderMathInElement !== 'undefined') {
+    renderMathInElement(contentEl, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$',  right: '$',  display: false },
+      ],
+      throwOnError: false,
+    });
+  }
+
+  // Highlight.js
+  if (post.components?.highlight && typeof hljs !== 'undefined') {
+    contentEl.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
+    new MutationObserver(() => {
+      const dark  = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+      const light = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+      ComponentLoader.loadCSS(
+        document.body.classList.contains('dark') ? dark : light
+      );
+    }).observe(document.body, { attributeFilter: ['class'] });
+  }
+
+  // パスワード画面を非表示
+  pwOverlay.classList.add('hidden');
+
+  // 目次を生成
+  buildToc();
+}
+
 // =====================================================
 // パスワード送信
 // =====================================================
-form.addEventListener('submit', async (e) => {
+form.addEventListener('submit', async e => {
   e.preventDefault();
   passwordError.classList.remove('show');
   spinner.classList.add('show');
   submitText.style.display = 'none';
 
   try {
-    const result = await supabase.getProtectedPost(slug, passwordInput.value);
+    const result = await fetchProtectedPost(slug, passwordInput.value);
 
     if (result.success) {
-      const post = result.post;
-
-      // ヘッダー
-      document.getElementById('post-title').innerHTML =
-        `${post.title} </span>`;
-      document.title = post.title + ' — My Notes';
-
-      if (post.created_at) {
-        document.getElementById('post-meta').textContent =
-          new Date(post.created_at).toLocaleDateString('ja-JP');
-      }
-
-      const tagsEl = document.getElementById('post-tags');
-      (post.tags || []).forEach(tag => {
-        const span = document.createElement('span');
-        span.className = 'post-tag';
-        span.textContent = tag;
-        tagsEl.appendChild(span);
-      });
-
-      document.getElementById('post-header').style.display = '';
-
- 
-      // Markdown → HTML レンダリング
-      // headerIds: false で ## 1 のような数字見出しへの自動ID付与を無効化
-      marked.use({ mangle: false, headerIds: false });
-      contentEl.innerHTML = marked.parse(post.content || '');
-
-      // KaTeX（defer 読み込みのため手動で呼ぶ）
-      if (typeof renderMathInElement !== 'undefined') {
-        renderMathInElement(contentEl, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$',  right: '$',  display: false }
-          ],
-          throwOnError: false
-        });
-      }
-
-      // パスワード画面を非表示
-      pwOverlay.classList.add('hidden');
       sessionStorage.setItem('pw_' + slug, passwordInput.value);
-
-      // ★ 目次を生成（レンダリング完了後）
-      buildToc();
-
+      await renderPost(result.post);
     } else {
+      passwordError.textContent = result.error === 'server_error'
+        ? 'エラーが発生しました。後ほど再試行してください。'
+        : 'パスワードが違います。';
       passwordError.classList.add('show');
       passwordInput.value = '';
       passwordInput.focus();
