@@ -1,0 +1,14 @@
+{
+  "name": "451-docs",
+  "version": "2.0.0",
+  "description": "Personal notes site — slug-based static site",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "watch": "node scripts/build.js --watch",
+    "dev": "netlify dev"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

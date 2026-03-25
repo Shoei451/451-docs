@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading… — My Notes</title>
+  <link rel="icon" href="images/451-docs-favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <!-- Highlight.js -->
+  <link rel="stylesheet" id="hljs-light"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <link rel="stylesheet" id="hljs-dark"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+    disabled>
+  <!-- marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+<!-- Back -->
+<a href="index.html" class="back-link" aria-label="ホームへ戻る">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+  <span>Home</span>
+</a>
+
+<!-- Dark mode toggle -->
+<span class="logo-switches">
+  <button id="theme-toggle" aria-label="Toggle Theme">
+    <svg id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+</span>
+
+<div class="overlay" id="overlay"></div>
+
+<button class="toc-toggle" id="tocToggle" style="display:none;">
+  <span class="icon">☰</span>
+  <span class="label">目次</span>
+</button>
+
+<aside class="toc" id="toc">
+  <h3>目次</h3>
+  <nav id="tocList"></nav>
+</aside>
+
+<!-- Article -->
+<article class="article" id="article">
+
+  <!-- Loading state -->
+  <div id="post-loading" style="text-align:center; padding:80px 0; color:var(--sub);">
+    読み込み中…
+  </div>
+
+  <!-- Error state (hidden by default) -->
+  <div id="post-error" style="display:none; text-align:center; padding:80px 0;">
+    <p style="color:var(--sub); font-size:1.1rem;">記事が見つかりませんでした。</p>
+    <p style="margin-top:12px;">
+      <a href="index.html" style="color:var(--accent);">← ホームに戻る</a>
+    </p>
+  </div>
+
+  <!-- Post content (hidden until loaded) -->
+  <div id="post-content" style="display:none;">
+    <img id="post-thumbnail" class="thumbnail" alt="" style="display:none;">
+    <h1 id="post-title"></h1>
+    <p id="post-date" class="post-meta"></p>
+
+    <nav class="toc-box" id="tocBox" style="display:none;">
+      <h3>目次</h3>
+      <ul></ul>
+    </nav>
+
+    <div id="post-body"></div>
+  </div>
+
+  <footer class="site-footer-bottom" id="post-footer" style="display:none;">
+    <p>© 2026 Shoei451</p>
+  </footer>
+
+</article>
+
+<script src="js/theme-toggle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<script>
+// =============================================
+// Highlight.js theme sync
+// =============================================
+(function () {
+  const light = document.getElementById('hljs-light');
+  const dark  = document.getElementById('hljs-dark');
+  function syncTheme() {
+    const isDark = document.body.classList.contains('dark');
+    light.disabled = isDark;
+    dark.disabled  = !isDark;
+  }
+  syncTheme();
+  new MutationObserver(syncTheme).observe(document.body, { attributeFilter: ['class'] });
+})();
+
+// =============================================
+// TOC builder
+// =============================================
+function buildToc() {
+  const article  = document.getElementById('article');
+  const headings = article.querySelectorAll('h2, h3, h4');
+  if (!headings.length) return;
+
+  const tocToggle = document.getElementById('tocToggle');
+  const tocBoxEl  = document.getElementById('tocBox');
+  const tocList   = document.getElementById('tocList');
+  const tocBox    = tocBoxEl.querySelector('ul');
+
+  tocToggle.style.display = '';
+  tocBoxEl.style.display  = '';
+
+  headings.forEach((h, i) => {
+    const id = 'section-' + i;
+    h.id = id;
+
+    const makeLink = () => {
+      const a = document.createElement('a');
+      a.href = '#' + id;
+      a.textContent = h.textContent;
+      if (h.tagName === 'H3') a.classList.add('h3');
+      if (h.tagName === 'H4') a.classList.add('h4');
+      return a;
+    };
+
+    tocList.appendChild(makeLink());
+
+    const li = document.createElement('li');
+    if (h.tagName === 'H3') li.classList.add('h3');
+    if (h.tagName === 'H4') li.classList.add('h4');
+    li.appendChild(makeLink());
+    tocBox.appendChild(li);
+  });
+
+  // Sidebar open/close
+  const overlay = document.getElementById('overlay');
+  const close = () => document.body.classList.remove('toc-open');
+  tocToggle.addEventListener('click', () => document.body.classList.toggle('toc-open'));
+  overlay.addEventListener('click', close);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  document.addEventListener('click', e => {
+    if (e.target.matches('.toc a, .toc-box a')) {
+      e.preventDefault();
+      const target = document.querySelector(e.target.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      close();
+    }
+  });
+
+  // Active highlight
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        document.querySelectorAll('.toc a').forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px' });
+
+  headings.forEach(h => obs.observe(h));
+}
+
+// =============================================
+// Main: load post from posts-data/{slug}.json
+// =============================================
+async function loadPost() {
+  const params = new URLSearchParams(window.location.search);
+  const slug   = params.get('slug');
+
+  const showError = () => {
+    document.getElementById('post-loading').style.display = 'none';
+    document.getElementById('post-error').style.display   = '';
+  };
+
+  if (!slug) { showError(); return; }
+
+  let meta;
+  try {
+    // posts-data/{slug}.json には frontmatter + md本文を格納
+    const res = await fetch(`posts-data/${slug}.json`);
+    if (!res.ok) throw new Error('not found');
+    meta = await res.json();
+  } catch {
+    showError();
+    return;
+  }
+
+  // --- Populate ---
+  document.title = (meta.title || slug) + ' — My Notes';
+
+  if (meta.thumbnail) {
+    const img = document.getElementById('post-thumbnail');
+    img.src   = meta.thumbnail;
+    img.style.display = '';
+  }
+
+  document.getElementById('post-title').textContent = meta.title || slug;
+
+  if (meta.date) {
+    const [y, m, d] = meta.date.split('-');
+    document.getElementById('post-date').textContent =
+      y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
+  }
+
+  // Render Markdown
+  marked.use({ mangle: false, headerIds: false });
+  document.getElementById('post-body').innerHTML = marked.parse(meta.content || '');
+
+  // KaTeX
+  if (typeof renderMathInElement !== 'undefined') {
+    renderMathInElement(document.getElementById('post-body'), {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$',  right: '$',  display: false }
+      ],
+      throwOnError: false
+    });
+  }
+
+  // Highlight.js
+  document.querySelectorAll('#post-body pre code').forEach(block => {
+    hljs.highlightElement(block);
+  });
+
+  // Show content
+  document.getElementById('post-loading').style.display = 'none';
+  document.getElementById('post-content').style.display = '';
+  document.getElementById('post-footer').style.display  = '';
+
+  // Build TOC after content is in the DOM
+  buildToc();
+}
+
+document.addEventListener('DOMContentLoaded', loadPost);
+</script>
+</body>
+</html>
