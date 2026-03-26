@@ -96,8 +96,8 @@ exports.handler = async (event) => {
 
   const slug     = (event.queryStringParameters?.slug     || '').trim();
   const password = (event.queryStringParameters?.password || '').trim();
-
-  if (!slug || !/^[\w-]+$/.test(slug)) {
+  // サブフォルダも使える
+  if (!slug || slug.includes('..') || !/^[\w][\w/-]*$/.test(slug)) {
     return { statusCode: 400, headers: CORS,
              body: JSON.stringify({ error: 'Invalid or missing slug.' }) };
   }

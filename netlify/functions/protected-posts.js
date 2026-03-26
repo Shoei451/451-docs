@@ -23,12 +23,21 @@ function ghHeaders() {
   };
 }
 
-async function listFiles() {
-  const res = await fetch(`${API}/repos/${REPO}/contents/${BASE}`, { headers: ghHeaders() });
+async function listFiles(basePath) {
+  const res = await fetch(`${API}/repos/${REPO}/contents/${basePath}?ref=main`, { headers: ghHeaders() });
   if (res.status === 404) return [];
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
   const items = await res.json();
-  return items.filter(item => item.name.endsWith('.md'));
+
+  const results = [];
+  for (const item of items) {
+    if (item.type === 'file' && item.name.endsWith('.md')) {
+      results.push(item);
+    } else if (item.type === 'dir') {
+      results.push(...await listFiles(item.path));
+    }
+  }
+  return results;
 }
 
 async function fetchRaw(slug) {
