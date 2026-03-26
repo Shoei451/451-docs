@@ -63,6 +63,7 @@ All Markdown is fetched at runtime from `md-contents` (private repo) via the Git
 │   ├── theme-toggle.js            ← dark mode persistence (localStorage)
 │   ├── index-logic.js             ← home page: fetch posts, render cards, category filter
 │   ├── post-common.js             ← shared: ComponentLoader, buildToc(), loaderStart/Done()
+│   ├── public-post.js
 │   ├── protected-post.js          ← password form logic, slug validation, post render
 │   └── script.js                  ← (legacy TOC, kept for reference)
 │
