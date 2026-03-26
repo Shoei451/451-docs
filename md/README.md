@@ -1,23 +1,23 @@
-# md/ ドキュメント整理
+# md Documentation Index
 
-最終更新: 2026-03-25
+Last updated: 2026-03-26
 
-このフォルダは、`451-docs` の運用ドキュメントを用途ごとに分けて管理する。
+This folder contains project-tracking documents for `451-docs`.
+All files here are maintained in English.
 
-## 使い分け
+## File map
 
-| ファイル | 用途 | 更新タイミング |
+| File | Purpose | Update when |
 |---|---|---|
-| `roadmap.md` | 実行計画の正本（優先順位・段階・完了条件） | 優先順位が変わったとき / タスク着手前 |
-| `changelog.md` | 実施済み変更の記録 | 実装が完了したとき |
-| `todo.md` | 一時メモ・思いつき・未整理タスク | 随時 |
-| `plan.md` | 背景と方針の要約 | 方針更新時 |
-| `migration.md` | 過去の移行手順（参考） | 原則更新しない |
-| `build-example.md` | CI設定例（参考） | 原則更新しない |
+| `roadmap.md` | Source of truth for execution status, priorities, and completion criteria | A task starts, finishes, or changes priority |
+| `changelog.md` | Historical record of completed changes | A code or architecture change is completed |
+| `todo.md` | Untriaged notes and quick reminders | Anytime new ideas or issues appear |
+| `plan.md` | High-level strategy and current assumptions | Strategy or architecture direction changes |
+| `migration.md` | Historical migration record and current post-migration notes | Migration policy needs clarification |
 
-## 運用ルール
+## Operating rules
 
-1. 新規タスクはまず `todo.md` に追記する。
-2. 実行対象にする前に `roadmap.md` へ移し、優先度と完了条件を明記する。
-3. 完了後は `changelog.md` に記録し、`roadmap.md` の状態を更新する。
-
+1. Write new raw ideas to `todo.md` first.
+2. Promote approved items into `roadmap.md` with status and acceptance criteria.
+3. Move completed work into `changelog.md` and update roadmap status.
+4. Keep `plan.md` short and stable. Keep task-level detail in `roadmap.md`.

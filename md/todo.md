@@ -1,10 +1,11 @@
-# todo（作業メモ）
+# TODO (Inbox)
 
-最終更新: 2026-03-25
+Last updated: 2026-03-26
 
-既存タスクは `md/roadmap.md` に移管済み。  
-このファイルは、未整理の新規メモだけを一時的に置く。
+Use this file only for untriaged notes. Move approved items into `md/roadmap.md`.
 
-## inbox
+## Inbox
 
-- （必要になったらここに追記）
+
+- Confirm versioning policy (`package.json` vs changelog cadence).
+- Optional: normalize remaining Japanese UI copy where English UI is desired.
