@@ -41,8 +41,7 @@
       background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
     }
   </style>
-
-  <!-- ★ このサイトのIDだけここに書く。他の文言はすべてAPIから取得する。 -->
+  <script>window.SITE_ID = 'shoei451-website'</script> 
   <script>window.SITE_ID = '451-docs';</script>
 </head>
 <body>
@@ -70,7 +69,7 @@
     <div class="profile-right">
       <p class="profile-label" id="hero-label"></p>
       <h1 class="profile-name" id="hero-title"></h1>
-      <p id="hero-owner" style="font-family:'DM Serif Display',Georgia,serif;font-size:clamp(2.6rem,6vw,4rem);line-height:1;margin:0 0 20px;color:var(--text);"></p>
+      <p id="hero-owner"></p>
       <p class="profile-bio" id="hero-bio"></p>
       <div class="profile-links" id="profile-links"></div>
     </div>
