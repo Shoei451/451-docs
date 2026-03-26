@@ -9,6 +9,7 @@ async function loadPost() {
   const site   = params.get('site') || window.SITE_ID || '';
 
   const siteParam = site ? `&site=${encodeURIComponent(site)}` : '';
+  void loadAndApplySiteAccent(site);
 
   const showError = () => {
     document.getElementById('post-loading').style.display = 'none';

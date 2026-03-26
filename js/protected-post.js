@@ -9,6 +9,7 @@ const slug   = params.get('slug');
 const site   = params.get('site') || window.SITE_ID || '';
 
 const siteParam = site ? `&site=${encodeURIComponent(site)}` : '';
+void loadAndApplySiteAccent(site);
 
 /* ── DOM refs ────────────────────────────────────────── */
 const form          = document.getElementById('password-form');

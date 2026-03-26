@@ -17,14 +17,16 @@ Browser
   │                                      md-contents/451-docs/protected_posts/
   │
   ├── GET /post.html?slug=xxx
-  │     └── fetch /api/post?slug=xxx → Netlify Function → GitHub API
-  │                                     md-contents/451-docs/public_posts/{slug}.md
+  │     ├── fetch /api/posts?site=...   → Netlify Function (site accent/ui)
+  │     └── fetch /api/post?slug=xxx    → Netlify Function → GitHub API
+  │                                        md-contents/451-docs/public_posts/{slug}.md
   │
   └── GET /protected-post.html?slug=xxx
+        ├── fetch /api/posts?site=...    → Netlify Function (site accent/ui)
         └── fetch /api/protected-post?slug=xxx&password=xxx
-                                         → Netlify Function → GitHub API
-                                           md-contents/451-docs/protected_posts/{slug}.md
-                                           (password verified server-side)
+                                            → Netlify Function → GitHub API
+                                              md-contents/451-docs/protected_posts/{slug}.md
+                                              (password verified server-side)
 ```
 
 All Markdown is fetched at runtime from `md-contents` (private repo) via the GitHub Contents API. The `451-docs` repo contains only code — no generated HTML, no copied JSON files.
@@ -224,6 +226,8 @@ CSS variables (defined in `css/styles.css`):
 | `--accent` | `#3b82f6` | `#60a5fa` |
 
 Dark mode is toggled by `body.dark` and persisted to `localStorage` via `js/theme-toggle.js`.
+
+`--accent` is overridden per site from `netlify/functions/_lib/config.js` (`accent`, `accentDark`), and this override is applied on `index.html`, `post.html`, and `protected-post.html`.
 
 ---
 
