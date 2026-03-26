@@ -23,7 +23,7 @@ const contentEl     = document.getElementById('markdown-content');
  * Fails open: if the network call fails we show the dialog anyway.
  */
 async function validateSlug(slug) {
-  if (!slug || !/^[\w-]+$/.test(slug)) return false;
+  if (!slug || !/^[\w][\w/-]*$/.test(slug)) return false;
   try {
     const res  = await fetch('/api/protected-posts');
     if (!res.ok) return true;                          // fail open
