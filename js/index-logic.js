@@ -7,13 +7,22 @@ function formatDateStr(dateStr) {
   return y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
 }
 
+/**
+ * ?site= クエリパラメータからサイトIDを取得する。
+ * 未指定の場合は '451-docs'（デフォルト）にフォールバック。
+ */
+function getSiteId() {
+  return new URLSearchParams(window.location.search).get('site') || '451-docs';
+}
+
 function siteParam() {
-  const id = window.SITE_ID || '';
-  return id ? `?site=${encodeURIComponent(id)}` : '';
+  const id = getSiteId();
+  return `?site=${encodeURIComponent(id)}`;
 }
 
 function resolveHref(post) {
-  const extra = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
+  const id    = getSiteId();
+  const extra = `&site=${encodeURIComponent(id)}`;
   if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}${extra}`;
   if (post.outputFile) return post.outputFile;
   return '#';
@@ -124,7 +133,8 @@ function createPublicCard(p) {
 }
 
 function createProtectedCard(p) {
-  const extra = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
+  const id    = getSiteId();
+  const extra = `&site=${encodeURIComponent(id)}`;
   const a = document.createElement('a');
   a.href             = `protected-post.html?slug=${encodeURIComponent(p.slug)}${extra}`;
   a.className        = 'card card--protected';
