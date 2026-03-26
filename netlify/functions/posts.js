@@ -2,8 +2,8 @@
 
 /**
  * Netlify Function: posts
- * Route: GET /api/posts?site={id}
- * Returns metadata list of public posts (no content) + site accent colors.
+ * Route: GET /api/posts   (site baked in via netlify.toml redirect query param)
+ * Returns: { accent, accentDark, ui, posts }
  */
 
 const { listFiles, fetchRaw }    = require('./_lib/github');
@@ -11,7 +11,6 @@ const { buildMeta }              = require('./_lib/frontmatter');
 const { CORS, handleOptions }    = require('./_lib/cors');
 const { REPO, getSite }          = require('./_lib/config');
 
-// Per-site cache keyed by site id
 const caches = {};
 const CACHE_TTL_MS = 60 * 1000;
 
@@ -43,6 +42,7 @@ exports.handler = async (event) => {
     const data = {
       accent:     site.accent,
       accentDark: site.accentDark,
+      ui:         site.ui,
       posts,
     };
 

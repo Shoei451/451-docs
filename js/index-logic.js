@@ -7,32 +7,100 @@ function formatDateStr(dateStr) {
   return y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
 }
 
+function siteParam() {
+  const id = window.SITE_ID || '';
+  return id ? `?site=${encodeURIComponent(id)}` : '';
+}
+
 function resolveHref(post) {
-  const site = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
-  if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}${site}`;
+  const extra = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
+  if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}${extra}`;
   if (post.outputFile) return post.outputFile;
   return '#';
 }
 
 // =====================================================
 // アクセントカラー注入
+// <style> タグで :root と body.dark を同時定義することで
+// theme-toggle.js の body.dark 付与タイミングに依存しない
 // =====================================================
 function applyAccent(accent, accentDark) {
   if (!accent) return;
-  const isDark = document.body.classList.contains('dark');
-  const color  = (isDark && accentDark) ? accentDark : accent;
-  document.documentElement.style.setProperty('--accent', color);
+  const existing = document.getElementById('site-accent');
+  if (existing) existing.remove();
+  const style = document.createElement('style');
+  style.id = 'site-accent';
+  style.textContent = `
+    :root     { --accent: ${accent}; }
+    body.dark { --accent: ${accentDark || accent}; }
+  `;
+  document.head.appendChild(style);
+}
 
-  // ダークモード切り替え時にも追従する
-  new MutationObserver(() => {
-    const c = document.body.classList.contains('dark') && accentDark ? accentDark : accent;
-    document.documentElement.style.setProperty('--accent', c);
-  }).observe(document.body, { attributeFilter: ['class'] });
+// =====================================================
+// UI文言の差し込み
+// =====================================================
+function applyUI(ui) {
+  if (!ui) return;
+
+  const setHTML = (id, html) => {
+    const el = document.getElementById(id);
+    if (el && html != null) el.innerHTML = html;
+  };
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el && text != null) el.textContent = text;
+  };
+
+  if (ui.siteTitle) document.title = ui.siteTitle;
+  setHTML('hero-label',    ui.heroLabel);
+  setHTML('hero-title',    ui.heroTitle);
+  setText('hero-owner',    ui.ownerLabel);
+  setText('hero-bio',      ui.heroBio);
+  setHTML('posts-heading', ui.postsHeading);
+  setHTML('footer-text',   ui.footerText);
+
+  const avatar = document.getElementById('hero-avatar');
+  if (avatar) {
+    if (ui.avatarUrl) {
+      avatar.src = ui.avatarUrl;
+    } else {
+      document.getElementById('hero-avatar-wrap')?.style.setProperty('display', 'none');
+    }
+  }
+
+  const linksEl = document.getElementById('profile-links');
+  if (linksEl && Array.isArray(ui.links)) {
+    linksEl.innerHTML = ui.links.map(link => `
+      <a href="${link.href}" target="_blank" rel="noopener" class="profile-link">
+        ${iconSVG(link.icon)}${link.label}
+      </a>
+    `).join('');
+  }
+}
+
+function iconSVG(icon) {
+  if (icon === 'github') return `
+    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57
+        0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695
+        -.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99
+        .105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225
+        -.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405
+        c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225
+        0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3
+        0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>`;
+  return '';
 }
 
 // =====================================================
 // カード生成
 // =====================================================
+function hasThumbnail(p) {
+  return typeof p.thumbnail === 'string' && p.thumbnail.trim() !== '';
+}
+
 function createPublicCard(p) {
   const a = document.createElement('a');
   a.href             = resolveHref(p);
@@ -40,7 +108,7 @@ function createPublicCard(p) {
   a.dataset.date     = p.date     || '';
   a.dataset.category = p.category || '';
 
-  const thumbHtml = p.thumbnail
+  const thumbHtml = hasThumbnail(p)
     ? `<img src="${p.thumbnail}" alt="" loading="lazy" />`
     : `<div class="card-thumb-placeholder"></div>`;
 
@@ -56,9 +124,9 @@ function createPublicCard(p) {
 }
 
 function createProtectedCard(p) {
-  const site = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
+  const extra = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
   const a = document.createElement('a');
-  a.href             = `protected-post.html?slug=${encodeURIComponent(p.slug)}${site}`;
+  a.href             = `protected-post.html?slug=${encodeURIComponent(p.slug)}${extra}`;
   a.className        = 'card card--protected';
   a.dataset.date     = p.date     || '';
   a.dataset.category = p.category || '';
@@ -84,16 +152,16 @@ async function initialize() {
   const countEl   = document.getElementById('posts-count');
   const tocList   = document.getElementById('tocList');
 
-  const siteParam = window.SITE_ID ? `?site=${encodeURIComponent(window.SITE_ID)}` : '';
+  const sp = siteParam();
 
-  // 1. 公開記事一覧 + アクセントカラーを /api/posts から取得
+  // 1. 公開記事 + サイト設定を /api/posts から一括取得
   let publicPosts = [];
   try {
-    const res = await fetch(`/api/posts${siteParam}`);
+    const res = await fetch(`/api/posts${sp}`);
     if (res.ok) {
       const data = await res.json();
-      // レスポンス形式: { accent, accentDark, posts: [...] }
       applyAccent(data.accent, data.accentDark);
+      applyUI(data.ui);
       publicPosts = Array.isArray(data.posts) ? data.posts : [];
     }
   } catch (e) {
@@ -105,17 +173,13 @@ async function initialize() {
     date: p.date || '',
   }));
 
-  // 2. 保護記事一覧を /api/protected-posts から取得
-  //    BASE_PROTECTED がないサイトは [] が返るだけなので分岐不要
+  // 2. 保護記事（BASE_PROTECTED がないサイトは [] が返る）
   try {
-    const res = await fetch(`/api/protected-posts${siteParam}`);
+    const res = await fetch(`/api/protected-posts${sp}`);
     if (res.ok) {
       const protectedPosts = await res.json();
       protectedPosts.forEach(p => {
-        allCards.push({
-          card: createProtectedCard(p),
-          date: p.date || '',
-        });
+        allCards.push({ card: createProtectedCard(p), date: p.date || '' });
       });
     }
   } catch (e) {

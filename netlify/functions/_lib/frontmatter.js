@@ -41,18 +41,26 @@ function parseFrontmatter(raw) {
 }
 
 /**
+ * Normalize optional string fields.
+ * Returns '' for missing keys AND for keys that exist but are empty/whitespace.
+ */
+function str(val) {
+  if (val === undefined || val === null) return '';
+  return String(val).trim();
+}
+
+/**
  * Build metadata object for public post list (no content, no password).
- * slug is passed in explicitly — never derived from filename here.
  */
 function buildMeta(slug, rawMd) {
   const { meta } = parseFrontmatter(rawMd);
   return {
     slug,
-    title:       meta.title       || slug,
-    date:        meta.date        || '',
-    description: meta.description || '',
-    thumbnail:   meta.thumbnail   || '',
-    category:    meta.category    || '',
+    title:       str(meta.title)       || slug,
+    date:        str(meta.date),
+    description: str(meta.description),
+    thumbnail:   str(meta.thumbnail),   // '' when missing or blank
+    category:    str(meta.category),
     components:  Object.assign({}, DEFAULT_COMPONENTS,
                    typeof meta.components === 'object' ? meta.components : {}),
   };
@@ -65,11 +73,11 @@ function buildPostData(slug, rawMd) {
   const { meta, content } = parseFrontmatter(rawMd);
   return {
     slug,
-    title:       meta.title       || slug,
-    date:        meta.date        || '',
-    description: meta.description || '',
-    thumbnail:   meta.thumbnail   || '',
-    category:    meta.category    || '',
+    title:       str(meta.title)       || slug,
+    date:        str(meta.date),
+    description: str(meta.description),
+    thumbnail:   str(meta.thumbnail),
+    category:    str(meta.category),
     components:  Object.assign({}, DEFAULT_COMPONENTS,
                    typeof meta.components === 'object' ? meta.components : {}),
     content,
@@ -83,11 +91,11 @@ function buildProtectedMeta(slug, rawMd) {
   const { meta } = parseFrontmatter(rawMd);
   return {
     slug,
-    title:     meta.title     || slug,
-    date:      meta.date      || '',
-    excerpt:   meta.excerpt   || '',
-    thumbnail: meta.thumbnail || '',
-    category:  meta.category  || '',
+    title:     str(meta.title)     || slug,
+    date:      str(meta.date),
+    excerpt:   str(meta.excerpt),
+    thumbnail: str(meta.thumbnail),
+    category:  str(meta.category),
     tags:      meta.tags ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
   };
 }
@@ -99,16 +107,15 @@ function buildProtectedPostData(slug, rawMd) {
   const { meta, content } = parseFrontmatter(rawMd);
   return {
     slug,
-    title:      meta.title      || slug,
-    date:       meta.date       || '',
-    excerpt:    meta.excerpt    || '',
-    thumbnail:  meta.thumbnail  || '',
-    category:   meta.category   || '',
+    title:      str(meta.title)      || slug,
+    date:       str(meta.date),
+    excerpt:    str(meta.excerpt),
+    thumbnail:  str(meta.thumbnail),
+    category:   str(meta.category),
     tags:       meta.tags ? meta.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
     components: Object.assign({}, DEFAULT_COMPONENTS,
                   typeof meta.components === 'object' ? meta.components : {}),
     content,
-    // password は絶対に含めない
   };
 }
 

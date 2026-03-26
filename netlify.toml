@@ -1,7 +1,3 @@
-[build]
-  command = "echo 'No build step — static site with Netlify Functions'"
-  publish = "."
-  functions = "netlify/functions"
 
 [[redirects]]
   from   = "/api/posts"
