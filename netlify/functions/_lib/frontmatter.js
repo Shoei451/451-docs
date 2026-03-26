@@ -46,7 +46,9 @@ function parseFrontmatter(raw) {
  */
 function str(val) {
   if (val === undefined || val === null) return '';
-  return String(val).trim();
+  if (typeof val === 'string') return val.trim();
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  return '';
 }
 
 /**
