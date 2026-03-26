@@ -142,11 +142,13 @@ async function loadPost() {
 
   // 4. Markdown → HTML
   marked.use({ mangle: false, headerIds: false });
-  document.getElementById('post-body').innerHTML = marked.parse(post.content || '');
+  const postBody = document.getElementById('post-body');
+  postBody.innerHTML = marked.parse(post.content || '');
+  makeTablesScrollable(postBody);
 
   // 5. KaTeX
   if (post.components?.katex && typeof renderMathInElement !== 'undefined') {
-    renderMathInElement(document.getElementById('post-body'), {
+    renderMathInElement(postBody, {
       delimiters: [
         { left: '$$', right: '$$', display: true  },
         { left: '$',  right: '$',  display: false },

@@ -15,22 +15,30 @@ const pwOverlay     = document.getElementById('password-overlay');
 const spinner       = document.getElementById('loading-spinner');
 const submitText    = document.getElementById('submit-text');
 const contentEl     = document.getElementById('markdown-content');
+const overlayTitle  = document.getElementById('overlay-post-title');
 
-/* ── Slug pre-validation ─────────────────────────────── */
+/* ── Slug pre-validation + metadata ──────────────────── */
 /**
  * Checks /api/protected-posts (public metadata, no passwords) to confirm
- * the slug actually exists before showing the password dialog.
+ * the slug actually exists before showing the password dialog, and picks
+ * up title metadata for the password overlay.
  * Fails open: if the network call fails we show the dialog anyway.
  */
-async function validateSlug(slug) {
-  if (!slug || !/^[\w][\w/-]*$/.test(slug)) return false;
+async function getProtectedPostMeta(slug) {
+  if (!slug || !/^[\w][\w/-]*$/.test(slug)) {
+    return { exists: false, title: '' };
+  }
+
   try {
     const res  = await fetch('/api/protected-posts');
-    if (!res.ok) return true;                          // fail open
+    if (!res.ok) return { exists: true, title: slug }; // fail open
     const list = await res.json();
-    return Array.isArray(list) && list.some(p => p.slug === slug);
+    if (!Array.isArray(list)) return { exists: true, title: slug };
+
+    const matched = list.find(p => p?.slug === slug);
+    return { exists: Boolean(matched), title: matched?.title || slug };
   } catch {
-    return true;                                       // fail open
+    return { exists: true, title: slug };              // fail open
   }
 }
 
@@ -47,6 +55,11 @@ function showSlugError(msg) {
       ← ホームへ戻る
     </a>
   `;
+}
+
+function setOverlayPostTitle(title) {
+  if (!overlayTitle) return;
+  overlayTitle.textContent = title || slug || '';
 }
 
 /* ── Fetch protected post ────────────────────────────── */
@@ -90,6 +103,7 @@ async function renderPost(post) {
   // Markdown → HTML
   marked.use({ mangle: false, headerIds: false });
   contentEl.innerHTML = marked.parse(post.content || '');
+  makeTablesScrollable(contentEl);
 
   // KaTeX
   if (post.components?.katex && typeof renderMathInElement !== 'undefined') {
@@ -155,8 +169,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   loaderStart();
 
   // 1. Validate slug exists
-  const exists = await validateSlug(slug);
-  if (!exists) {
+  const meta = await getProtectedPostMeta(slug);
+  if (!meta.exists) {
     loaderDone();
     showSlugError(
       slug
@@ -165,6 +179,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     );
     return;
   }
+  setOverlayPostTitle(meta.title);
 
   loaderDone();   // slug check done — password form is now visible
 

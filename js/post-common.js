@@ -5,6 +5,7 @@
  * Globals exposed:
  *   ComponentLoader  — dynamic CSS/JS injection (dedup by URL)
  *   loadComponents() — load KaTeX / Highlight.js per post.components
+ *   makeTablesScrollable() — wrap markdown tables for horizontal scroll
  *   buildToc()       — generate sidebar + inline TOC from article headings
  *   loaderStart()    — start top loading bar animation
  *   loaderDone()     — complete + fade out loading bar
@@ -74,6 +75,20 @@ async function loadComponents(components) {
   }
 
   await Promise.all(jobs);
+}
+
+/* ── makeTablesScrollable ───────────────────────────── */
+function makeTablesScrollable(root) {
+  const container = root || document;
+  const tables = container.querySelectorAll('table');
+
+  tables.forEach(table => {
+    if (table.parentElement?.classList.contains('table-scroll')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'table-scroll';
+    table.parentNode?.insertBefore(wrap, table);
+    wrap.appendChild(table);
+  });
 }
 
 /* ── buildToc ────────────────────────────────────────── */

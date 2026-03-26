@@ -199,11 +199,23 @@ body.toc-open .toc {
   }
 }
 
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  margin: 32px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 32px 0;
   font-size: 0.95rem;
+}
+
+.table-scroll > table {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
 }
 
 th, td {
