@@ -9,9 +9,7 @@
 const { listFiles, fetchRaw }    = require('./_lib/github');
 const { buildMeta }              = require('./_lib/frontmatter');
 const { CORS, handleOptions }    = require('./_lib/cors');
-
-const REPO = 'Shoei451/md-contents';
-const BASE = '451-docs/public_posts';
+const { REPO, BASE_PUBLIC }      = require('./_lib/config');   // ← was hardcoded
 
 let cache = null;
 const CACHE_TTL_MS = 60 * 1000;
@@ -25,12 +23,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    const files = await listFiles(REPO, BASE);
+    const files = await listFiles(REPO, BASE_PUBLIC);
 
     const metaList = (await Promise.all(
       files.map(async ({ path }) => {
-        const slug = path.replace(`${BASE}/`, '').replace(/\.md$/i, '');
-        const raw  = await fetchRaw(REPO, BASE, slug);
+        const slug = path.replace(`${BASE_PUBLIC}/`, '').replace(/\.md$/i, '');
+        const raw  = await fetchRaw(REPO, BASE_PUBLIC, slug);
         return raw ? buildMeta(slug, raw) : null;
       })
     ))

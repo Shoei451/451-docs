@@ -14,6 +14,7 @@ All notable project changes for `451-docs`.
   - `github.js` for GitHub Contents API access
   - `frontmatter.js` for frontmatter parsing and post DTO builders
   - `cors.js` for CORS headers and OPTIONS handling
+  - `config.js` for specifying REPO and BASE
 - Subfolder slugs are supported for both public and protected posts.
 - Frontend post utilities were consolidated in `js/post-common.js`:
   - dynamic component loading (KaTeX and highlight.js)

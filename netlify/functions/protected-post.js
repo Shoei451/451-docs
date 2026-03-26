@@ -6,13 +6,11 @@
  * Verifies password server-side. Never returns the password field.
  */
 
-const { fetchRaw }                       = require('./_lib/github');
+const { fetchRaw }                    = require('./_lib/github');
 const { buildProtectedPostData,
-        checkPassword }                  = require('./_lib/frontmatter');
-const { CORS, handleOptions }            = require('./_lib/cors');
-
-const REPO = 'Shoei451/md-contents';
-const BASE = '451-docs/protected_posts';
+        checkPassword }               = require('./_lib/frontmatter');
+const { CORS, handleOptions }         = require('./_lib/cors');
+const { REPO, BASE_PROTECTED }        = require('./_lib/config');   // ← was hardcoded
 
 const VALID_SLUG = /^[\w][\w/-]*$/;
 
@@ -31,9 +29,8 @@ exports.handler = async (event) => {
   }
 
   try {
-    const raw = await fetchRaw(REPO, BASE, slug);
+    const raw = await fetchRaw(REPO, BASE_PROTECTED, slug);
 
-    // not found と wrong password を区別しない
     if (!raw || !checkPassword(raw, password)) {
       return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Invalid password or post not found.' }) };
     }

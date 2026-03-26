@@ -9,11 +9,8 @@
 const { fetchRaw }            = require('./_lib/github');
 const { buildPostData }       = require('./_lib/frontmatter');
 const { CORS, handleOptions } = require('./_lib/cors');
+const { REPO, BASE_PUBLIC }   = require('./_lib/config');   // ← was hardcoded
 
-const REPO = 'Shoei451/md-contents';
-const BASE = '451-docs/public_posts';
-
-// スラッシュ（サブフォルダ）を許可、パストラバーサル対策
 const VALID_SLUG = /^[\w][\w/-]*$/;
 
 exports.handler = async (event) => {
@@ -26,7 +23,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const raw = await fetchRaw(REPO, BASE, slug);
+    const raw = await fetchRaw(REPO, BASE_PUBLIC, slug);
     if (!raw) return { statusCode: 404, headers: CORS, body: JSON.stringify({ error: 'Post not found.' }) };
     return { statusCode: 200, headers: CORS, body: JSON.stringify(buildPostData(slug, raw)) };
   } catch (err) {

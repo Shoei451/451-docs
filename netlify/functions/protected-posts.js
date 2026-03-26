@@ -6,12 +6,10 @@
  * Returns metadata list of protected posts (no content, no password).
  */
 
-const { listFiles, fetchRaw }        = require('./_lib/github');
-const { buildProtectedMeta }         = require('./_lib/frontmatter');
-const { CORS, handleOptions }        = require('./_lib/cors');
-
-const REPO = 'Shoei451/md-contents';
-const BASE = '451-docs/protected_posts';
+const { listFiles, fetchRaw }     = require('./_lib/github');
+const { buildProtectedMeta }      = require('./_lib/frontmatter');
+const { CORS, handleOptions }     = require('./_lib/cors');
+const { REPO, BASE_PROTECTED }    = require('./_lib/config');   // ← was hardcoded
 
 let cache = null;
 const CACHE_TTL_MS = 60 * 1000;
@@ -25,12 +23,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    const files = await listFiles(REPO, BASE);
+    const files = await listFiles(REPO, BASE_PROTECTED);
 
     const metaList = (await Promise.all(
       files.map(async ({ path }) => {
-        const slug = path.replace(`${BASE}/`, '').replace(/\.md$/i, '');
-        const raw  = await fetchRaw(REPO, BASE, slug);
+        const slug = path.replace(`${BASE_PROTECTED}/`, '').replace(/\.md$/i, '');
+        const raw  = await fetchRaw(REPO, BASE_PROTECTED, slug);
         return raw ? buildProtectedMeta(slug, raw) : null;
       })
     ))

@@ -50,6 +50,7 @@ All Markdown is fetched at runtime from `md-contents` (private repo) via the Git
 │       └── _lib/
 │           ├── github.js          ← GitHub Contents API wrapper
 │           ├── frontmatter.js     ← shared frontmatter parser + post builders
+│           ├──config.js           ← cofiguration (REPO, BASE_PUBLIC, BASE_PROTECTED)
 │           └── cors.js            ← shared CORS headers + OPTIONS handler
 │
 ├── css/
