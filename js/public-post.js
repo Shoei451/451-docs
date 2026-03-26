@@ -6,6 +6,9 @@ async function loadPost() {
 
   const params = new URLSearchParams(window.location.search);
   const slug   = params.get('slug');
+  const site   = params.get('site') || window.SITE_ID || '';
+
+  const siteParam = site ? `&site=${encodeURIComponent(site)}` : '';
 
   const showError = () => {
     document.getElementById('post-loading').style.display = 'none';
@@ -18,7 +21,7 @@ async function loadPost() {
   // 1. Fetch post JSON
   let post;
   try {
-    const res = await fetch(`/api/post?slug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/post?slug=${encodeURIComponent(slug)}${siteParam}`);
     if (!res.ok) throw new Error('not found');
     post = await res.json();
   } catch {

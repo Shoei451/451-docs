@@ -3,9 +3,12 @@
  * Depends on: js/post-common.js (ComponentLoader, loadComponents, buildToc, loaderStart, loaderDone)
  */
 
-/* ── Slug ────────────────────────────────────────────── */
+/* ── URL params ──────────────────────────────────────── */
 const params = new URLSearchParams(window.location.search);
 const slug   = params.get('slug');
+const site   = params.get('site') || window.SITE_ID || '';
+
+const siteParam = site ? `&site=${encodeURIComponent(site)}` : '';
 
 /* ── DOM refs ────────────────────────────────────────── */
 const form          = document.getElementById('password-form');
@@ -18,27 +21,21 @@ const contentEl     = document.getElementById('markdown-content');
 const overlayTitle  = document.getElementById('overlay-post-title');
 
 /* ── Slug pre-validation + metadata ──────────────────── */
-/**
- * Checks /api/protected-posts (public metadata, no passwords) to confirm
- * the slug actually exists before showing the password dialog, and picks
- * up title metadata for the password overlay.
- * Fails open: if the network call fails we show the dialog anyway.
- */
 async function getProtectedPostMeta(slug) {
   if (!slug || !/^[\w][\w/-]*$/.test(slug)) {
     return { exists: false, title: '' };
   }
 
   try {
-    const res  = await fetch('/api/protected-posts');
-    if (!res.ok) return { exists: true, title: slug }; // fail open
+    const res  = await fetch(`/api/protected-posts${siteParam ? '?' + siteParam.slice(1) : ''}`);
+    if (!res.ok) return { exists: true, title: slug };
     const list = await res.json();
     if (!Array.isArray(list)) return { exists: true, title: slug };
 
     const matched = list.find(p => p?.slug === slug);
     return { exists: Boolean(matched), title: matched?.title || slug };
   } catch {
-    return { exists: true, title: slug };              // fail open
+    return { exists: true, title: slug };
   }
 }
 
@@ -64,7 +61,7 @@ function setOverlayPostTitle(title) {
 
 /* ── Fetch protected post ────────────────────────────── */
 async function fetchProtectedPost(slug, password) {
-  const url = `/api/protected-post?slug=${encodeURIComponent(slug)}&password=${encodeURIComponent(password)}`;
+  const url = `/api/protected-post?slug=${encodeURIComponent(slug)}&password=${encodeURIComponent(password)}${siteParam}`;
   const res  = await fetch(url);
 
   if (res.status === 401) return { success: false, error: 'invalid_password' };
@@ -79,7 +76,6 @@ async function fetchProtectedPost(slug, password) {
 async function renderPost(post) {
   await loadComponents(post.components);
 
-  // Header
   document.getElementById('post-title').textContent = post.title || slug;
   document.title = (post.title || slug) + ' — My Notes';
 
@@ -100,12 +96,10 @@ async function renderPost(post) {
 
   document.getElementById('post-header').style.display = '';
 
-  // Markdown → HTML
   marked.use({ mangle: false, headerIds: false });
   contentEl.innerHTML = marked.parse(post.content || '');
   makeTablesScrollable(contentEl);
 
-  // KaTeX
   if (post.components?.katex && typeof renderMathInElement !== 'undefined') {
     renderMathInElement(contentEl, {
       delimiters: [
@@ -116,7 +110,6 @@ async function renderPost(post) {
     });
   }
 
-  // Highlight.js + dark mode watch
   if (post.components?.highlight && typeof hljs !== 'undefined') {
     contentEl.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
     new MutationObserver(() => {
@@ -168,7 +161,6 @@ form.addEventListener('submit', async e => {
 window.addEventListener('DOMContentLoaded', async () => {
   loaderStart();
 
-  // 1. Validate slug exists
   const meta = await getProtectedPostMeta(slug);
   if (!meta.exists) {
     loaderDone();
@@ -181,9 +173,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
   setOverlayPostTitle(meta.title);
 
-  loaderDone();   // slug check done — password form is now visible
+  loaderDone();
 
-  // 2. Auto-login if session has stored password
   const saved = sessionStorage.getItem('pw_' + slug);
   if (saved) {
     passwordInput.value = saved;

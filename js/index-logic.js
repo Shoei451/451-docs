@@ -8,9 +8,26 @@ function formatDateStr(dateStr) {
 }
 
 function resolveHref(post) {
-  if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}`;
+  const site = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
+  if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}${site}`;
   if (post.outputFile) return post.outputFile;
   return '#';
+}
+
+// =====================================================
+// アクセントカラー注入
+// =====================================================
+function applyAccent(accent, accentDark) {
+  if (!accent) return;
+  const isDark = document.body.classList.contains('dark');
+  const color  = (isDark && accentDark) ? accentDark : accent;
+  document.documentElement.style.setProperty('--accent', color);
+
+  // ダークモード切り替え時にも追従する
+  new MutationObserver(() => {
+    const c = document.body.classList.contains('dark') && accentDark ? accentDark : accent;
+    document.documentElement.style.setProperty('--accent', c);
+  }).observe(document.body, { attributeFilter: ['class'] });
 }
 
 // =====================================================
@@ -22,10 +39,13 @@ function createPublicCard(p) {
   a.className        = 'card';
   a.dataset.date     = p.date     || '';
   a.dataset.category = p.category || '';
+
+  const thumbHtml = p.thumbnail
+    ? `<img src="${p.thumbnail}" alt="" loading="lazy" />`
+    : `<div class="card-thumb-placeholder"></div>`;
+
   a.innerHTML = `
-    <div class="card-img-wrap">
-      <img src="${p.thumbnail || 'https://picsum.photos/600/300'}" alt="" loading="lazy" />
-    </div>
+    <div class="card-img-wrap">${thumbHtml}</div>
     <div class="card-body">
       <h2 class="card-title">${p.title}</h2>
       <p class="card-desc">${p.description || ''}</p>
@@ -36,8 +56,9 @@ function createPublicCard(p) {
 }
 
 function createProtectedCard(p) {
+  const site = window.SITE_ID ? `&site=${encodeURIComponent(window.SITE_ID)}` : '';
   const a = document.createElement('a');
-  a.href             = 'protected-post.html?slug=' + encodeURIComponent(p.slug);
+  a.href             = `protected-post.html?slug=${encodeURIComponent(p.slug)}${site}`;
   a.className        = 'card card--protected';
   a.dataset.date     = p.date     || '';
   a.dataset.category = p.category || '';
@@ -63,14 +84,20 @@ async function initialize() {
   const countEl   = document.getElementById('posts-count');
   const tocList   = document.getElementById('tocList');
 
-  // 1. 公開記事一覧を /api/posts から取得
+  const siteParam = window.SITE_ID ? `?site=${encodeURIComponent(window.SITE_ID)}` : '';
+
+  // 1. 公開記事一覧 + アクセントカラーを /api/posts から取得
   let publicPosts = [];
   try {
-    const res = await fetch('/api/posts');
-    if (res.ok) publicPosts = await res.json();
+    const res = await fetch(`/api/posts${siteParam}`);
+    if (res.ok) {
+      const data = await res.json();
+      // レスポンス形式: { accent, accentDark, posts: [...] }
+      applyAccent(data.accent, data.accentDark);
+      publicPosts = Array.isArray(data.posts) ? data.posts : [];
+    }
   } catch (e) {
     console.warn('Failed to fetch /api/posts:', e);
-    publicPosts = window.PUBLIC_POSTS || [];
   }
 
   const allCards = publicPosts.map(p => ({
@@ -79,8 +106,9 @@ async function initialize() {
   }));
 
   // 2. 保護記事一覧を /api/protected-posts から取得
+  //    BASE_PROTECTED がないサイトは [] が返るだけなので分岐不要
   try {
-    const res = await fetch('/api/protected-posts');
+    const res = await fetch(`/api/protected-posts${siteParam}`);
     if (res.ok) {
       const protectedPosts = await res.json();
       protectedPosts.forEach(p => {
