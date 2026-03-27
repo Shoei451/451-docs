@@ -8,6 +8,8 @@ const params = new URLSearchParams(window.location.search);
 const slug = params.get("slug");
 const site = params.get("site") || window.SITE_ID || "";
 
+applyHomeLinks(site);
+
 const siteParam = site ? `&site=${encodeURIComponent(site)}` : "";
 void loadAndApplySiteAccent(site);
 
@@ -55,6 +57,7 @@ function showSlugError(msg) {
       Back to Home
     </a>
   `;
+  applyHomeLinks(site, dialog);
 }
 
 function setOverlayPostTitle(title) {

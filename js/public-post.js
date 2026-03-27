@@ -8,6 +8,8 @@ async function loadPost() {
   const slug = params.get("slug");
   const site = params.get("site") || window.SITE_ID || "";
 
+  applyHomeLinks(site);
+
   const siteParam = site ? `&site=${encodeURIComponent(site)}` : "";
   void loadAndApplySiteAccent(site);
 

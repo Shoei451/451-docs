@@ -75,6 +75,18 @@ async function loadAndApplySiteAccent(siteId) {
   }
 }
 
+function buildHomeHref(siteId) {
+  const site = (siteId || "").trim();
+  return site ? `index.html?site=${encodeURIComponent(site)}` : "index.html";
+}
+
+function applyHomeLinks(siteId, root = document) {
+  const href = buildHomeHref(siteId);
+  root.querySelectorAll('a[href="index.html"]').forEach((link) => {
+    link.href = href;
+  });
+}
+
 /* ── loadComponents ──────────────────────────────────── */
 async function loadComponents(components) {
   const c = components || {};
