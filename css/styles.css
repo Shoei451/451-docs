@@ -146,6 +146,18 @@ body.toc-open .toc {
   margin-bottom: 40px;
 }
 
+#post-body a,
+#markdown-content a {
+  color: var(--accent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+#post-body a:hover,
+#markdown-content a:hover {
+  opacity: 0.85;
+}
+
 /* ================= TOC Box ================= */
 
 .toc-box {
