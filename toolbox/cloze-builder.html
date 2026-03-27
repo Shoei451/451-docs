@@ -1,464 +1,703 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cloze Builder — 451 Toolbox</title>
-  <link rel="icon" href="../images/s-docs.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloze Builder — 451 Toolbox</title>
+    <link rel="icon" href="../images/s-docs.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    :root {
-      --bg:       #ffffff;
-      --surface:  #f9fafb;
-      --text:     #222;
-      --sub:      #6b7280;
-      --border:   #e5e7eb;
-      --accent:   #3b82f6;
-      --accent-l: rgba(59,130,246,0.10);
-      --yellow:   #b7791f;
-      --yellow-l: rgba(183,121,31,0.10);
-      --shadow:   rgba(0,0,0,0.12);
-      --green:    #2f855a;
-      --red:      #c53030;
-      --mono:     'JetBrains Mono', monospace;
-      --sans:     'DM Sans', sans-serif;
-      --serif:    'DM Serif Display', serif;
-    }
+      :root {
+        --bg: #ffffff;
+        --surface: #f9fafb;
+        --text: #222;
+        --sub: #6b7280;
+        --border: #e5e7eb;
+        --accent: #3b82f6;
+        --accent-l: rgba(59, 130, 246, 0.1);
+        --yellow: #b7791f;
+        --yellow-l: rgba(183, 121, 31, 0.1);
+        --shadow: rgba(0, 0, 0, 0.12);
+        --green: #2f855a;
+        --red: #c53030;
+        --mono: "JetBrains Mono", monospace;
+        --sans: "DM Sans", sans-serif;
+        --serif: "DM Serif Display", serif;
+      }
 
-    html, body {
-      height: 100%;
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.7;
-    }
+      html,
+      body {
+        height: 100%;
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+      }
 
-    /* ── Back link ── */
-    .back-link {
-      position: fixed;
-      top: 20px; left: 20px;
-      z-index: 200;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      text-decoration: none;
-      color: var(--sub);
-      padding: 8px 16px 8px 12px;
-      border-radius: 999px;
-      border: 2px solid var(--border);
-      background: var(--surface);
-      box-shadow: 0 4px 12px var(--shadow);
-      transition: all 0.2s;
-    }
-    .back-link svg { width: 15px; height: 15px; stroke: currentColor; flex-shrink: 0; }
-    .back-link:hover { color: var(--accent); border-color: var(--accent); transform: translateX(-2px); }
+      /* ── Back link ── */
+      .back-link {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 200;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--sub);
+        padding: 8px 16px 8px 12px;
+        border-radius: 999px;
+        border: 2px solid var(--border);
+        background: var(--surface);
+        box-shadow: 0 4px 12px var(--shadow);
+        transition: all 0.2s;
+      }
+      .back-link svg {
+        width: 15px;
+        height: 15px;
+        stroke: currentColor;
+        flex-shrink: 0;
+      }
+      .back-link:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+        transform: translateX(-2px);
+      }
 
-    /* ── Hero ── */
-    .hero {
-      max-width: 680px;
-      margin: 0 auto 32px;
-      padding: 96px 24px 36px;
-      text-align: center;
-    }
-    .hero-label {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: var(--accent-l);
-      padding: 4px 14px;
-      border-radius: 20px;
-      margin-bottom: 14px;
-    }
-    .hero h1 {
-      font-family: var(--serif);
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      line-height: 1.2;
-      margin-bottom: 10px;
-    }
-    .hero h1 em { font-style: italic; color: var(--accent); }
-    .hero p { color: var(--sub); font-size: 0.9rem; max-width: 480px; margin: 0 auto; }
+      /* ── Hero ── */
+      .hero {
+        max-width: 680px;
+        margin: 0 auto 32px;
+        padding: 96px 24px 36px;
+        text-align: center;
+      }
+      .hero-label {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: var(--accent-l);
+        padding: 4px 14px;
+        border-radius: 20px;
+        margin-bottom: 14px;
+      }
+      .hero h1 {
+        font-family: var(--serif);
+        font-size: clamp(2rem, 5vw, 2.8rem);
+        line-height: 1.2;
+        margin-bottom: 10px;
+      }
+      .hero h1 em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .hero p {
+        color: var(--sub);
+        font-size: 0.9rem;
+        max-width: 480px;
+        margin: 0 auto;
+      }
 
-    /* ── Page content ── */
-    .page-content {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 0 24px 80px;
-    }
+      /* ── Page content ── */
+      .page-content {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 24px 80px;
+      }
 
-    /* ── Card ── */
-    .card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
+      /* ── Card ── */
+      .card {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
 
-    /* ── Tab bar ── */
-    .ws-tabs {
-      display: flex;
-      align-items: center;
-      padding: 10px 14px;
-      border-bottom: 2px solid var(--border);
-      gap: 4px;
-      background: var(--bg);
-    }
-    .ws-tab {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 16px;
-      border-radius: 8px;
-      border: 2px solid transparent;
-      font-size: 0.82rem;
-      font-weight: 500;
-      font-family: var(--sans);
-      cursor: pointer;
-      background: transparent;
-      color: var(--sub);
-      transition: all 0.18s;
-    }
-    .ws-tab:hover { color: var(--text); background: var(--surface); }
-    .ws-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+      /* ── Tab bar ── */
+      .ws-tabs {
+        display: flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-bottom: 2px solid var(--border);
+        gap: 4px;
+        background: var(--bg);
+      }
+      .ws-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        font-size: 0.82rem;
+        font-weight: 500;
+        font-family: var(--sans);
+        cursor: pointer;
+        background: transparent;
+        color: var(--sub);
+        transition: all 0.18s;
+      }
+      .ws-tab:hover {
+        color: var(--text);
+        background: var(--surface);
+      }
+      .ws-tab.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
 
-    .ws-actions {
-      display: flex;
-      gap: 6px;
-      margin-left: auto;
-      align-items: center;
-    }
-    .cloze-badge {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 100px;
-      background: var(--surface);
-      color: var(--sub);
-      border: 1.5px solid var(--border);
-      transition: all 0.2s;
-    }
-    .cloze-badge.has-cloze {
-      background: var(--yellow-l);
-      color: var(--yellow);
-      border-color: rgba(183,121,31,0.3);
-    }
+      .ws-actions {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
+        align-items: center;
+      }
+      .cloze-badge {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        font-weight: 500;
+        padding: 3px 10px;
+        border-radius: 100px;
+        background: var(--surface);
+        color: var(--sub);
+        border: 1.5px solid var(--border);
+        transition: all 0.2s;
+      }
+      .cloze-badge.has-cloze {
+        background: var(--yellow-l);
+        color: var(--yellow);
+        border-color: rgba(183, 121, 31, 0.3);
+      }
 
-    /* ── Buttons ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      font-family: var(--sans);
-      border: 2px solid var(--border);
-      background: var(--bg);
-      color: var(--sub);
-      cursor: pointer;
-      transition: all 0.18s;
-      white-space: nowrap;
-    }
-    .btn:hover { color: var(--text); border-color: #ccc; }
-    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .btn-primary:hover { opacity: 0.88; color: #fff; }
-    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-yellow { background: var(--yellow); color: #fff; border-color: var(--yellow); }
-    .btn-yellow:hover { opacity: 0.88; color: #fff; }
-    .btn-ghost { background: transparent; color: var(--sub); border-color: var(--border); }
-    .btn-ghost:hover { background: var(--surface); color: var(--text); }
-    .btn-sm { padding: 5px 12px; font-size: 0.75rem; }
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        font-family: var(--sans);
+        border: 2px solid var(--border);
+        background: var(--bg);
+        color: var(--sub);
+        cursor: pointer;
+        transition: all 0.18s;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        color: var(--text);
+        border-color: #ccc;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .btn-primary:hover {
+        opacity: 0.88;
+        color: #fff;
+      }
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-yellow {
+        background: var(--yellow);
+        color: #fff;
+        border-color: var(--yellow);
+      }
+      .btn-yellow:hover {
+        opacity: 0.88;
+        color: #fff;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--sub);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        background: var(--surface);
+        color: var(--text);
+      }
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 0.75rem;
+      }
 
-    .kbd {
-      font-family: var(--mono);
-      font-size: 0.62rem;
-      background: rgba(255,255,255,0.25);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 3px;
-      padding: 0.1em 0.4em;
-    }
-    .btn-ghost .kbd {
-      background: var(--bg);
-      border-color: var(--border);
-      color: var(--sub);
-    }
+      .kbd {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+        padding: 0.1em 0.4em;
+      }
+      .btn-ghost .kbd {
+        background: var(--bg);
+        border-color: var(--border);
+        color: var(--sub);
+      }
 
-    /* ── Panels ── */
-    .ws-panel { display: none; }
-    .ws-panel.active { display: flex; flex-direction: column; }
+      /* ── Panels ── */
+      .ws-panel {
+        display: none;
+      }
+      .ws-panel.active {
+        display: flex;
+        flex-direction: column;
+      }
 
-    /* ── Editor toolbar ── */
-    .editor-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      flex-wrap: wrap;
-    }
-    .toolbar-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+      /* ── Editor toolbar ── */
+      .editor-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        flex-wrap: wrap;
+      }
+      .toolbar-sep {
+        width: 1px;
+        height: 18px;
+        background: var(--border);
+        margin: 0 2px;
+      }
 
-    /* ── Textarea ── */
-    #mdInput {
-      width: 100%;
-      min-height: 480px;
-      resize: none;
-      border: none;
-      outline: none;
-      padding: 22px 26px;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      line-height: 1.9;
-      background: var(--bg);
-      color: var(--text);
-      tab-size: 2;
-    }
-    #mdInput::placeholder { color: #d1d5db; }
+      /* ── Textarea ── */
+      #mdInput {
+        width: 100%;
+        min-height: 480px;
+        resize: none;
+        border: none;
+        outline: none;
+        padding: 22px 26px;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        line-height: 1.9;
+        background: var(--bg);
+        color: var(--text);
+        tab-size: 2;
+      }
+      #mdInput::placeholder {
+        color: #d1d5db;
+      }
 
-    /* ── Drop overlay ── */
-    .drop-overlay {
-      display: none;
-      position: absolute;
-      inset: 0;
-      background: rgba(59,130,246,0.05);
-      border: 2.5px dashed var(--accent);
-      border-radius: 12px;
-      z-index: 5;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      color: var(--accent);
-      font-weight: 600;
-      pointer-events: none;
-    }
-    .drop-overlay.active { display: flex; }
-    .ws-panel { position: relative; }
+      /* ── Drop overlay ── */
+      .drop-overlay {
+        display: none;
+        position: absolute;
+        inset: 0;
+        background: rgba(59, 130, 246, 0.05);
+        border: 2.5px dashed var(--accent);
+        border-radius: 12px;
+        z-index: 5;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: var(--accent);
+        font-weight: 600;
+        pointer-events: none;
+      }
+      .drop-overlay.active {
+        display: flex;
+      }
+      .ws-panel {
+        position: relative;
+      }
 
-    /* ── Preview toolbar ── */
-    .preview-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-    .preview-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--sub);
-      margin-right: 2px;
-    }
+      /* ── Preview toolbar ── */
+      .preview-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .preview-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--sub);
+        margin-right: 2px;
+      }
 
-    /* ── Preview scroll area ── */
-    .preview-scroll {
-      min-height: 480px;
-      padding: 24px 28px;
-      background: var(--bg);
-    }
+      /* ── Preview scroll area ── */
+      .preview-scroll {
+        min-height: 480px;
+        padding: 24px 28px;
+        background: var(--bg);
+      }
 
-    /* ── Cloze spans ── */
-    .cloze-word {
-      display: inline-block;
-      padding: 1px 7px;
-      margin: 0 1px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-weight: 600;
-      user-select: none;
-    }
-    .cloze-word.cloze-hidden {
-      background: #1c1c1c;
-      color: transparent;
-      border: 1.5px solid #444;
-    }
-    .cloze-word.cloze-hidden:hover { background: #2d2d2d; }
-    .cloze-word.revealed {
-      background: var(--yellow-l);
-      color: #92400e;
-      border: 1.5px solid rgba(183,121,31,0.4);
-    }
-    .cloze-word:active { transform: scale(0.97); }
+      /* ── Cloze spans ── */
+      .cloze-word {
+        display: inline-block;
+        padding: 1px 7px;
+        margin: 0 1px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-weight: 600;
+        user-select: none;
+      }
+      .cloze-word.cloze-hidden {
+        background: #1c1c1c;
+        color: transparent;
+        border: 1.5px solid #444;
+      }
+      .cloze-word.cloze-hidden:hover {
+        background: #2d2d2d;
+      }
+      .cloze-word.revealed {
+        background: var(--yellow-l);
+        color: #92400e;
+        border: 1.5px solid rgba(183, 121, 31, 0.4);
+      }
+      .cloze-word:active {
+        transform: scale(0.97);
+      }
 
-    /* ── Markdown body ── */
-    .md-body { font-size: 0.9rem; line-height: 1.85; }
-    .md-body h1 { font-family: var(--serif); font-size: 1.5rem; margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
-    .md-body h2 { font-size: 1rem; font-weight: 700; margin: 1.4rem 0 0.5rem; color: var(--accent); }
-    .md-body h3 { font-size: 0.9rem; font-weight: 700; margin: 1rem 0 0.35rem; }
-    .md-body p  { margin-bottom: 0.7rem; }
-    .md-body ul, .md-body ol { padding-left: 1.4rem; margin-bottom: 0.7rem; }
-    .md-body li { margin-bottom: 0.2rem; }
-    .md-body strong { font-weight: 700; }
-    .md-body em { font-style: italic; }
-    .md-body code { font-family: var(--mono); font-size: 0.8em; background: var(--accent-l); color: var(--accent); padding: 0.1em 0.45em; border-radius: 4px; }
-    .md-body blockquote { border-left: 3px solid var(--accent); padding: 0.6rem 1rem; background: var(--surface); border-radius: 0 6px 6px 0; margin: 0.7rem 0; color: var(--sub); }
-    .md-body hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
-    .md-body table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 0.7rem; }
-    .md-body th { background: var(--surface); border: 1px solid var(--border); padding: 0.45rem 0.7rem; font-weight: 600; }
-    .md-body td { border: 1px solid var(--border); padding: 0.45rem 0.7rem; }
+      /* ── Markdown body ── */
+      .md-body {
+        font-size: 0.9rem;
+        line-height: 1.85;
+      }
+      .md-body h1 {
+        font-family: var(--serif);
+        font-size: 1.5rem;
+        margin: 0 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border);
+      }
+      .md-body h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 1.4rem 0 0.5rem;
+        color: var(--accent);
+      }
+      .md-body h3 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin: 1rem 0 0.35rem;
+      }
+      .md-body p {
+        margin-bottom: 0.7rem;
+      }
+      .md-body ul,
+      .md-body ol {
+        padding-left: 1.4rem;
+        margin-bottom: 0.7rem;
+      }
+      .md-body li {
+        margin-bottom: 0.2rem;
+      }
+      .md-body strong {
+        font-weight: 700;
+      }
+      .md-body em {
+        font-style: italic;
+      }
+      .md-body code {
+        font-family: var(--mono);
+        font-size: 0.8em;
+        background: var(--accent-l);
+        color: var(--accent);
+        padding: 0.1em 0.45em;
+        border-radius: 4px;
+      }
+      .md-body blockquote {
+        border-left: 3px solid var(--accent);
+        padding: 0.6rem 1rem;
+        background: var(--surface);
+        border-radius: 0 6px 6px 0;
+        margin: 0.7rem 0;
+        color: var(--sub);
+      }
+      .md-body hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 1rem 0;
+      }
+      .md-body table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        margin-bottom: 0.7rem;
+      }
+      .md-body th {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 0.45rem 0.7rem;
+        font-weight: 600;
+      }
+      .md-body td {
+        border: 1px solid var(--border);
+        padding: 0.45rem 0.7rem;
+      }
 
-    /* ── Empty state ── */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 320px;
-      gap: 10px;
-      color: var(--sub);
-    }
-    .empty-icon { font-size: 2.2rem; opacity: 0.25; }
-    .empty-state p { font-size: 0.85rem; }
+      /* ── Empty state ── */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 320px;
+        gap: 10px;
+        color: var(--sub);
+      }
+      .empty-icon {
+        font-size: 2.2rem;
+        opacity: 0.25;
+      }
+      .empty-state p {
+        font-size: 0.85rem;
+      }
 
-    /* ── Stats bar ── */
-    .stats-bar {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 7px 18px;
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      color: var(--sub);
-    }
-    .stats-bar strong { color: var(--text); font-weight: 500; }
-    .stats-filename { margin-left: auto; color: var(--accent); font-weight: 500; }
+      /* ── Stats bar ── */
+      .stats-bar {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 7px 18px;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--sub);
+      }
+      .stats-bar strong {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .stats-filename {
+        margin-left: auto;
+        color: var(--accent);
+        font-weight: 500;
+      }
 
-    /* ── Info / note boxes ── */
-    .info-box {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-left: 4px solid var(--accent);
-      border-radius: 10px;
-      padding: 18px 22px;
-      margin-bottom: 16px;
-    }
-    .info-box h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; }
-    .info-box ol { padding-left: 18px; }
-    .info-box li { font-size: 0.82rem; color: var(--sub); line-height: 1.65; margin-bottom: 5px; }
-    .info-box code {
-      font-family: var(--mono); font-size: 0.78rem;
-      background: var(--bg); border: 1px solid var(--border);
-      padding: 0.1em 0.4em; border-radius: 4px; color: var(--accent);
-    }
-    .note-box {
-      background: rgba(183,121,31,0.06);
-      border: 2px solid rgba(183,121,31,0.2);
-      border-radius: 10px;
-      padding: 14px 18px;
-      font-size: 0.82rem;
-      line-height: 1.65;
-    }
-    .note-box strong { color: var(--yellow); }
-    .note-box code {
-      font-family: var(--mono); font-size: 0.78rem;
-      background: rgba(255,255,255,0.7);
-      padding: 1px 6px; border-radius: 3px;
-    }
+      /* ── Info / note boxes ── */
+      .info-box {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-left: 4px solid var(--accent);
+        border-radius: 10px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+      }
+      .info-box h3 {
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .info-box ol {
+        padding-left: 18px;
+      }
+      .info-box li {
+        font-size: 0.82rem;
+        color: var(--sub);
+        line-height: 1.65;
+        margin-bottom: 5px;
+      }
+      .info-box code {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        padding: 0.1em 0.4em;
+        border-radius: 4px;
+        color: var(--accent);
+      }
+      .note-box {
+        background: rgba(183, 121, 31, 0.06);
+        border: 2px solid rgba(183, 121, 31, 0.2);
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 0.82rem;
+        line-height: 1.65;
+      }
+      .note-box strong {
+        color: var(--yellow);
+      }
+      .note-box code {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 1px 6px;
+        border-radius: 3px;
+      }
 
-    /* ── Toast ── */
-    .toast {
-      position: fixed;
-      bottom: 1.5rem; left: 50%;
-      transform: translateX(-50%) translateY(6px);
-      background: #111; color: white;
-      padding: 8px 20px; border-radius: 100px;
-      font-size: 0.8rem; font-family: var(--sans);
-      opacity: 0; pointer-events: none;
-      transition: all 0.2s; z-index: 999;
-      white-space: nowrap;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      /* ── Toast ── */
+      .toast {
+        position: fixed;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(6px);
+        background: #111;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-family: var(--sans);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.2s;
+        z-index: 999;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
 
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      text-align: center;
-      padding: 28px 24px 40px;
-      font-size: 0.78rem;
-      color: var(--sub);
-    }
+      /* ── Footer ── */
+      footer {
+        border-top: 1px solid var(--border);
+        text-align: center;
+        padding: 28px 24px 40px;
+        font-size: 0.78rem;
+        color: var(--sub);
+      }
 
-    @media (max-width: 600px) {
-      .hero { padding: 88px 20px 28px; }
-      .page-content { padding: 0 14px 60px; }
-      #mdInput { min-height: 360px; padding: 16px; }
-      .preview-scroll { min-height: 360px; padding: 16px 18px; }
-      .ws-actions .btn-primary { font-size: 0; padding: 5px 10px; }
-      .ws-actions .btn-primary::before { content: '⬇'; font-size: 0.85rem; }
-    }
-  </style>
-</head>
-<body>
+      @media (max-width: 600px) {
+        .hero {
+          padding: 88px 20px 28px;
+        }
+        .page-content {
+          padding: 0 14px 60px;
+        }
+        #mdInput {
+          min-height: 360px;
+          padding: 16px;
+        }
+        .preview-scroll {
+          min-height: 360px;
+          padding: 16px 18px;
+        }
+        .ws-actions .btn-primary {
+          font-size: 0;
+          padding: 5px 10px;
+        }
+        .ws-actions .btn-primary::before {
+          content: "⬇";
+          font-size: 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-link">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Toolbox
+    </a>
 
-<a href="index.html" class="back-link">
-  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="15 18 9 12 15 6"></polyline>
-  </svg>
-  Toolbox
-</a>
-
-<div class="hero">
-  <div class="hero-label">Learning Tools</div>
-  <h1>Cloze <em>Builder</em></h1>
-  <p>Markdown に <code style="font-family:var(--mono);font-size:0.82em;background:var(--accent-l);color:var(--accent);padding:2px 8px;border-radius:4px">⟦⟦…⟧⟧</code> を埋め込んで穴埋め教材を作る。</p>
-</div>
-
-<div class="page-content">
-
-  <!-- Main workspace card -->
-  <div class="card">
-
-    <!-- Tab bar -->
-    <div class="ws-tabs">
-      <button class="ws-tab active" id="tab-editor" onclick="switchTab('editor')">
-        Editor
-      </button>
-      <button class="ws-tab" id="tab-preview" onclick="switchTab('preview')">
-        Preview
-      </button>
-      <div class="ws-actions">
-        <span class="cloze-badge" id="clozeBadge">⟦⟦0⟧⟧</span>
-        <button class="btn btn-ghost btn-sm" onclick="clearAll()">Clear</button>
-        <button class="btn btn-primary btn-sm" id="dlBtn" onclick="downloadMd()" disabled>
-          ⬇ Download MD
-        </button>
-      </div>
+    <div class="hero">
+      <div class="hero-label">Learning Tools</div>
+      <h1>Cloze <em>Builder</em></h1>
+      <p>
+        Markdown に
+        <code
+          style="
+            font-family: var(--mono);
+            font-size: 0.82em;
+            background: var(--accent-l);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+          "
+          >⟦⟦…⟧⟧</code
+        >
+        を埋め込んで穴埋め教材を作る。
+      </p>
     </div>
 
-    <!-- ── Editor panel ── -->
-    <div class="ws-panel active" id="panel-editor">
-      <div class="editor-toolbar">
-        <button class="btn btn-yellow btn-sm" onclick="wrapSelection()">
-          ⟦⟦ 穴埋め化 ⟧⟧<kbd class="kbd">Alt+W</kbd>
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="unwrapSelection()">解除</button>
-        <div class="toolbar-sep"></div>
-        <button class="btn btn-ghost btn-sm" onclick="removeClozeAll()">記号を全削除</button>
-        <div class="toolbar-sep"></div>
-        <span style="font-size:0.72rem;color:var(--sub)">
-          .md ファイルをドロップして読み込み
-        </span>
-      </div>
+    <div class="page-content">
+      <!-- Main workspace card -->
+      <div class="card">
+        <!-- Tab bar -->
+        <div class="ws-tabs">
+          <button
+            class="ws-tab active"
+            id="tab-editor"
+            onclick="switchTab('editor')"
+          >
+            Editor
+          </button>
+          <button
+            class="ws-tab"
+            id="tab-preview"
+            onclick="switchTab('preview')"
+          >
+            Preview
+          </button>
+          <div class="ws-actions">
+            <span class="cloze-badge" id="clozeBadge">⟦⟦0⟧⟧</span>
+            <button class="btn btn-ghost btn-sm" onclick="clearAll()">
+              Clear
+            </button>
+            <button
+              class="btn btn-primary btn-sm"
+              id="dlBtn"
+              onclick="downloadMd()"
+              disabled
+            >
+              ⬇ Download MD
+            </button>
+          </div>
+        </div>
 
-      <textarea id="mdInput"
-        placeholder="Markdown を貼り付けるか、.md ファイルをドロップ…
+        <!-- ── Editor panel ── -->
+        <div class="ws-panel active" id="panel-editor">
+          <div class="editor-toolbar">
+            <button class="btn btn-yellow btn-sm" onclick="wrapSelection()">
+              ⟦⟦ 穴埋め化 ⟧⟧<kbd class="kbd">Alt+W</kbd>
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="unwrapSelection()">
+              解除
+            </button>
+            <div class="toolbar-sep"></div>
+            <button class="btn btn-ghost btn-sm" onclick="removeClozeAll()">
+              記号を全削除
+            </button>
+            <div class="toolbar-sep"></div>
+            <span style="font-size: 0.72rem; color: var(--sub)">
+              .md ファイルをドロップして読み込み
+            </span>
+          </div>
+
+          <textarea
+            id="mdInput"
+            placeholder="Markdown を貼り付けるか、.md ファイルをドロップ…
 
 例：
 ## 子どもの権利条約
@@ -467,251 +706,308 @@
 ⟦⟦生きる権利⟧⟧・⟦⟦育つ権利⟧⟧・⟦⟦守られる権利⟧⟧・⟦⟦参加する権利⟧⟧を保障する。
 
 日本は⟦⟦1994⟧⟧年に批准した。"
-        spellcheck="false"
-      ></textarea>
+            spellcheck="false"
+          ></textarea>
 
-      <div class="drop-overlay" id="dropOverlay"> MD ファイルをドロップ</div>
-    </div>
+          <div class="drop-overlay" id="dropOverlay">MD ファイルをドロップ</div>
+        </div>
 
-    <!-- ── Preview panel ── -->
-    <div class="ws-panel" id="panel-preview">
-      <div class="preview-toolbar">
-        <span class="preview-label">穴埋めプレビュー</span>
-        <button class="btn btn-ghost btn-sm" onclick="revealAll()">全て表示</button>
-        <button class="btn btn-ghost btn-sm" onclick="hideAll()">全て隠す</button>
-        <span style="margin-left:auto;font-size:0.72rem;color:var(--sub)">クリックでトグル</span>
-      </div>
-      <div class="preview-scroll">
-        <div class="md-body" id="preview">
-          <div class="empty-state">
-            <div class="empty-icon">⟦⟦⟧⟧</div>
-            <p>エディタにMDを入力すると穴埋めプレビューが表示されます</p>
+        <!-- ── Preview panel ── -->
+        <div class="ws-panel" id="panel-preview">
+          <div class="preview-toolbar">
+            <span class="preview-label">穴埋めプレビュー</span>
+            <button class="btn btn-ghost btn-sm" onclick="revealAll()">
+              全て表示
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="hideAll()">
+              全て隠す
+            </button>
+            <span
+              style="margin-left: auto; font-size: 0.72rem; color: var(--sub)"
+              >クリックでトグル</span
+            >
+          </div>
+          <div class="preview-scroll">
+            <div class="md-body" id="preview">
+              <div class="empty-state">
+                <div class="empty-icon">⟦⟦⟧⟧</div>
+                <p>エディタにMDを入力すると穴埋めプレビューが表示されます</p>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- Stats bar -->
+        <div class="stats-bar">
+          <span>⟦⟦<strong id="sbCloze">0</strong>⟧⟧</span>
+          <span>文字 <strong id="sbChars">0</strong></span>
+          <span>行 <strong id="sbLines">0</strong></span>
+          <span class="stats-filename" id="sbFile"></span>
+        </div>
+      </div>
+
+      <!-- How-to -->
+      <div class="info-box">
+        <h3>使い方</h3>
+        <ol>
+          <li>
+            Markdown を貼り付けるか、<code>.md</code>
+            ファイルをエディタにドロップして読み込む。
+          </li>
+          <li>
+            隠したい語句を選択して <strong>⟦⟦ 穴埋め化 ⟧⟧</strong>（または
+            <code>Alt+W</code>）。手書きで
+            <code>⟦⟦語句⟧⟧</code> と書いてもよい。
+          </li>
+          <li>
+            <strong>プレビュー</strong
+            >タブで表示を確認。クリックで個別トグル、全表示/全隠しも可。
+          </li>
+          <li>
+            <strong>⬇ ダウンロード</strong>して
+            <code>notes/{slug}/unitN.md</code> に保存、Netlify にデプロイ。
+          </li>
+        </ol>
+      </div>
+
+      <div class="note-box">
+        <strong>記号について：</strong>
+        <code>⟦⟦…⟧⟧</code> は Markdown・Obsidian・HTML
+        のいずれとも衝突しない安全な記号です。
+        <code>note-app.js</code>
+        はこれを読み取り、クリックトグル型の穴埋めUIとして描画します。
       </div>
     </div>
 
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <span>⟦⟦<strong id="sbCloze">0</strong>⟧⟧</span>
-      <span>文字 <strong id="sbChars">0</strong></span>
-      <span>行 <strong id="sbLines">0</strong></span>
-      <span class="stats-filename" id="sbFile"></span>
-    </div>
-  </div>
+    <footer>451 Learning Box · Cloze Builder</footer>
 
-  <!-- How-to -->
-  <div class="info-box">
-    <h3>使い方</h3>
-    <ol>
-      <li>Markdown を貼り付けるか、<code>.md</code> ファイルをエディタにドロップして読み込む。</li>
-      <li>隠したい語句を選択して <strong>⟦⟦ 穴埋め化 ⟧⟧</strong>（または <code>Alt+W</code>）。手書きで <code>⟦⟦語句⟧⟧</code> と書いてもよい。</li>
-      <li><strong>プレビュー</strong>タブで表示を確認。クリックで個別トグル、全表示/全隠しも可。</li>
-      <li><strong>⬇ ダウンロード</strong>して <code>notes/{slug}/unitN.md</code> に保存、Netlify にデプロイ。</li>
-    </ol>
-  </div>
+    <div class="toast" id="toast"></div>
 
-  <div class="note-box">
-    <strong>記号について：</strong>
-    <code>⟦⟦…⟧⟧</code> は Markdown・Obsidian・HTML のいずれとも衝突しない安全な記号です。
-    <code>note-app.js</code> はこれを読み取り、クリックトグル型の穴埋めUIとして描画します。
-  </div>
+    <script>
+      // ── State ──
+      let currentFilename = "";
+      let activeTab = "editor";
 
-</div>
+      const mdInput = document.getElementById("mdInput");
+      const preview = document.getElementById("preview");
 
-<footer>451 Learning Box · Cloze Builder</footer>
+      // ── Tab switch ──
+      function switchTab(tab) {
+        activeTab = tab;
+        ["editor", "preview"].forEach((t) => {
+          document
+            .getElementById("tab-" + t)
+            .classList.toggle("active", t === tab);
+          document
+            .getElementById("panel-" + t)
+            .classList.toggle("active", t === tab);
+        });
+        if (tab === "preview") render();
+        else mdInput.focus();
+      }
 
-<div class="toast" id="toast"></div>
-
-<script>
-// ── State ──
-let currentFilename = '';
-let activeTab = 'editor';
-
-const mdInput = document.getElementById('mdInput');
-const preview = document.getElementById('preview');
-
-// ── Tab switch ──
-function switchTab(tab) {
-  activeTab = tab;
-  ['editor','preview'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
-    document.getElementById('panel-' + t).classList.toggle('active', t === tab);
-  });
-  if (tab === 'preview') render();
-  else mdInput.focus();
-}
-
-// ── Render preview ──
-function render() {
-  const raw = mdInput.value;
-  if (!raw.trim()) {
-    preview.innerHTML = `<div class="empty-state">
+      // ── Render preview ──
+      function render() {
+        const raw = mdInput.value;
+        if (!raw.trim()) {
+          preview.innerHTML = `<div class="empty-state">
       <div class="empty-icon">⟦⟦⟧⟧</div>
       <p>エディタにMDを入力すると穴埋めプレビューが表示されます</p>
     </div>`;
-    return;
-  }
+          return;
+        }
 
-  // Protect ⟦⟦…⟧⟧ from marked.js
-  const ph = [];
-  const escaped = raw.replace(/⟦⟦([\s\S]*?)⟧⟧/g, (_, t) => {
-    ph.push(t);
-    return `CLZPH_${ph.length - 1}_END`;
-  });
+        // Protect ⟦⟦…⟧⟧ from marked.js
+        const ph = [];
+        const escaped = raw.replace(/⟦⟦([\s\S]*?)⟧⟧/g, (_, t) => {
+          ph.push(t);
+          return `CLZPH_${ph.length - 1}_END`;
+        });
 
-  let html = marked.parse(escaped);
+        let html = marked.parse(escaped);
 
-  html = html.replace(/CLZPH_(\d+)_END/g, (_, i) => {
-    const text = escHtml(ph[+i]);
-    return `<span class="cloze-word cloze-hidden" onclick="toggleCloze(this)" title="${text}">${text}</span>`;
-  });
+        html = html.replace(/CLZPH_(\d+)_END/g, (_, i) => {
+          const text = escHtml(ph[+i]);
+          return `<span class="cloze-word cloze-hidden" onclick="toggleCloze(this)" title="${text}">${text}</span>`;
+        });
 
-  preview.innerHTML = html;
-}
+        preview.innerHTML = html;
+      }
 
-// ── Stats ──
-function updateStats() {
-  const raw   = mdInput.value;
-  const count = (raw.match(/⟦⟦[\s\S]*?⟧⟧/g) || []).length;
-  const lines = raw ? raw.split('\n').length : 0;
+      // ── Stats ──
+      function updateStats() {
+        const raw = mdInput.value;
+        const count = (raw.match(/⟦⟦[\s\S]*?⟧⟧/g) || []).length;
+        const lines = raw ? raw.split("\n").length : 0;
 
-  document.getElementById('sbCloze').textContent = count;
-  document.getElementById('sbChars').textContent = raw.length;
-  document.getElementById('sbLines').textContent = lines;
+        document.getElementById("sbCloze").textContent = count;
+        document.getElementById("sbChars").textContent = raw.length;
+        document.getElementById("sbLines").textContent = lines;
 
-  const badge = document.getElementById('clozeBadge');
-  badge.textContent = `⟦⟦ ${count} ⟧⟧`;
-  badge.classList.toggle('has-cloze', count > 0);
+        const badge = document.getElementById("clozeBadge");
+        badge.textContent = `⟦⟦ ${count} ⟧⟧`;
+        badge.classList.toggle("has-cloze", count > 0);
 
-  document.getElementById('dlBtn').disabled = !raw.trim();
-}
+        document.getElementById("dlBtn").disabled = !raw.trim();
+      }
 
-// ── Toggle ──
-function toggleCloze(el) {
-  el.classList.toggle('cloze-hidden');
-  el.classList.toggle('revealed');
-}
-function revealAll() {
-  document.querySelectorAll('.cloze-word').forEach(el => {
-    el.classList.remove('cloze-hidden');
-    el.classList.add('revealed');
-  });
-}
-function hideAll() {
-  document.querySelectorAll('.cloze-word').forEach(el => {
-    el.classList.add('cloze-hidden');
-    el.classList.remove('revealed');
-  });
-}
+      // ── Toggle ──
+      function toggleCloze(el) {
+        el.classList.toggle("cloze-hidden");
+        el.classList.toggle("revealed");
+      }
+      function revealAll() {
+        document.querySelectorAll(".cloze-word").forEach((el) => {
+          el.classList.remove("cloze-hidden");
+          el.classList.add("revealed");
+        });
+      }
+      function hideAll() {
+        document.querySelectorAll(".cloze-word").forEach((el) => {
+          el.classList.add("cloze-hidden");
+          el.classList.remove("revealed");
+        });
+      }
 
-// ── Wrap / Unwrap ──
-function wrapSelection() {
-  const s = mdInput.selectionStart, e = mdInput.selectionEnd;
-  if (s === e) { showToast('語句を選択してから穴埋め化してください'); return; }
-  const sel = mdInput.value.slice(s, e);
-  if (sel.includes('⟦⟦')) { showToast('すでに ⟦⟦⟧⟧ が含まれています'); return; }
-  const wrapped = `⟦⟦${sel}⟧⟧`;
-  mdInput.value = mdInput.value.slice(0, s) + wrapped + mdInput.value.slice(e);
-  mdInput.setSelectionRange(s + wrapped.length, s + wrapped.length);
-  mdInput.focus();
-  mdInput.dispatchEvent(new Event('input'));
-  showToast(`⟦⟦ ${sel} ⟧⟧`);
-}
+      // ── Wrap / Unwrap ──
+      function wrapSelection() {
+        const s = mdInput.selectionStart,
+          e = mdInput.selectionEnd;
+        if (s === e) {
+          showToast("語句を選択してから穴埋め化してください");
+          return;
+        }
+        const sel = mdInput.value.slice(s, e);
+        if (sel.includes("⟦⟦")) {
+          showToast("すでに ⟦⟦⟧⟧ が含まれています");
+          return;
+        }
+        const wrapped = `⟦⟦${sel}⟧⟧`;
+        mdInput.value =
+          mdInput.value.slice(0, s) + wrapped + mdInput.value.slice(e);
+        mdInput.setSelectionRange(s + wrapped.length, s + wrapped.length);
+        mdInput.focus();
+        mdInput.dispatchEvent(new Event("input"));
+        showToast(`⟦⟦ ${sel} ⟧⟧`);
+      }
 
-function unwrapSelection() {
-  const s = mdInput.selectionStart, e = mdInput.selectionEnd;
-  const sel = mdInput.value.slice(s, e);
-  const unwrapped = sel.replace(/⟦⟦([\s\S]*?)⟧⟧/g, '$1');
-  if (unwrapped === sel) { showToast('選択範囲に ⟦⟦⟧⟧ がありません'); return; }
-  mdInput.value = mdInput.value.slice(0, s) + unwrapped + mdInput.value.slice(e);
-  mdInput.setSelectionRange(s, s + unwrapped.length);
-  mdInput.dispatchEvent(new Event('input'));
-  showToast('解除しました');
-}
+      function unwrapSelection() {
+        const s = mdInput.selectionStart,
+          e = mdInput.selectionEnd;
+        const sel = mdInput.value.slice(s, e);
+        const unwrapped = sel.replace(/⟦⟦([\s\S]*?)⟧⟧/g, "$1");
+        if (unwrapped === sel) {
+          showToast("選択範囲に ⟦⟦⟧⟧ がありません");
+          return;
+        }
+        mdInput.value =
+          mdInput.value.slice(0, s) + unwrapped + mdInput.value.slice(e);
+        mdInput.setSelectionRange(s, s + unwrapped.length);
+        mdInput.dispatchEvent(new Event("input"));
+        showToast("解除しました");
+      }
 
-function removeClozeAll() {
-  if (!confirm('⟦⟦⟧⟧ 記号をすべて削除しますか？（テキストは残ります）')) return;
-  mdInput.value = mdInput.value.replace(/⟦⟦([\s\S]*?)⟧⟧/g, '$1');
-  mdInput.dispatchEvent(new Event('input'));
-  showToast('⟦⟦⟧⟧ を全削除しました');
-}
+      function removeClozeAll() {
+        if (!confirm("⟦⟦⟧⟧ 記号をすべて削除しますか？（テキストは残ります）"))
+          return;
+        mdInput.value = mdInput.value.replace(/⟦⟦([\s\S]*?)⟧⟧/g, "$1");
+        mdInput.dispatchEvent(new Event("input"));
+        showToast("⟦⟦⟧⟧ を全削除しました");
+      }
 
-// ── File drop ──
-const editorPanel = document.getElementById('panel-editor');
-const dropOverlay = document.getElementById('dropOverlay');
+      // ── File drop ──
+      const editorPanel = document.getElementById("panel-editor");
+      const dropOverlay = document.getElementById("dropOverlay");
 
-editorPanel.addEventListener('dragover',  e => { e.preventDefault(); dropOverlay.classList.add('active'); });
-editorPanel.addEventListener('dragleave', () => dropOverlay.classList.remove('active'));
-editorPanel.addEventListener('drop', e => {
-  e.preventDefault();
-  dropOverlay.classList.remove('active');
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  if (!/\.(md|txt)$/i.test(file.name)) { showToast('⚠ .md または .txt ファイルをドロップしてください'); return; }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    mdInput.value = ev.target.result;
-    currentFilename = file.name;
-    document.getElementById('sbFile').textContent = file.name;
-    mdInput.dispatchEvent(new Event('input'));
-    showToast(`📄 ${file.name} を読み込みました`);
-  };
-  reader.readAsText(file, 'UTF-8');
-});
+      editorPanel.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropOverlay.classList.add("active");
+      });
+      editorPanel.addEventListener("dragleave", () =>
+        dropOverlay.classList.remove("active"),
+      );
+      editorPanel.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropOverlay.classList.remove("active");
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        if (!/\.(md|txt)$/i.test(file.name)) {
+          showToast("⚠ .md または .txt ファイルをドロップしてください");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          mdInput.value = ev.target.result;
+          currentFilename = file.name;
+          document.getElementById("sbFile").textContent = file.name;
+          mdInput.dispatchEvent(new Event("input"));
+          showToast(`📄 ${file.name} を読み込みました`);
+        };
+        reader.readAsText(file, "UTF-8");
+      });
 
-// ── Download ──
-function downloadMd() {
-  const content = mdInput.value;
-  if (!content.trim()) return;
-  const name = currentFilename
-    ? currentFilename.replace(/\.md$/i, '') + '-cloze.md'
-    : 'unit-cloze.md';
-  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  Object.assign(document.createElement('a'), { href: url, download: name }).click();
-  URL.revokeObjectURL(url);
-  showToast(`⬇ ${name} をダウンロードしました`);
-}
+      // ── Download ──
+      function downloadMd() {
+        const content = mdInput.value;
+        if (!content.trim()) return;
+        const name = currentFilename
+          ? currentFilename.replace(/\.md$/i, "") + "-cloze.md"
+          : "unit-cloze.md";
+        const blob = new Blob([content], {
+          type: "text/markdown;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+        Object.assign(document.createElement("a"), {
+          href: url,
+          download: name,
+        }).click();
+        URL.revokeObjectURL(url);
+        showToast(`⬇ ${name} をダウンロードしました`);
+      }
 
-// ── Clear ──
-function clearAll() {
-  if (mdInput.value.trim() && !confirm('内容をクリアしますか？')) return;
-  mdInput.value = '';
-  currentFilename = '';
-  document.getElementById('sbFile').textContent = '';
-  mdInput.dispatchEvent(new Event('input'));
-  if (activeTab === 'preview') render();
-}
+      // ── Clear ──
+      function clearAll() {
+        if (mdInput.value.trim() && !confirm("内容をクリアしますか？")) return;
+        mdInput.value = "";
+        currentFilename = "";
+        document.getElementById("sbFile").textContent = "";
+        mdInput.dispatchEvent(new Event("input"));
+        if (activeTab === "preview") render();
+      }
 
-// ── Input handler ──
-mdInput.addEventListener('input', () => {
-  updateStats();
-  if (activeTab === 'preview') render();
-});
+      // ── Input handler ──
+      mdInput.addEventListener("input", () => {
+        updateStats();
+        if (activeTab === "preview") render();
+      });
 
-// ── Keyboard shortcut ──
-document.addEventListener('keydown', e => {
-  if (e.altKey && e.key === 'w') { e.preventDefault(); wrapSelection(); }
-});
+      // ── Keyboard shortcut ──
+      document.addEventListener("keydown", (e) => {
+        if (e.altKey && e.key === "w") {
+          e.preventDefault();
+          wrapSelection();
+        }
+      });
 
-// ── Utils ──
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+      // ── Utils ──
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-let _tt;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(_tt);
-  _tt = setTimeout(() => t.classList.remove('show'), 2100);
-}
+      let _tt;
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => t.classList.remove("show"), 2100);
+      }
 
-updateStats();
-</script>
-</body>
+      updateStats();
+    </script>
+  </body>
 </html>

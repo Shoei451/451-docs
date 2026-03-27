@@ -2,9 +2,9 @@
 // ユーティリティ
 // =====================================================
 function formatDateStr(dateStr) {
-  if (!dateStr) return '';
-  const [y, m, d] = dateStr.split('-');
-  return y + '年' + parseInt(m) + '月' + parseInt(d) + '日';
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  return y + "年" + parseInt(m) + "月" + parseInt(d) + "日";
 }
 
 /**
@@ -12,7 +12,7 @@ function formatDateStr(dateStr) {
  * 未指定の場合は '451-docs'（デフォルト）にフォールバック。
  */
 function getSiteId() {
-  return new URLSearchParams(window.location.search).get('site') || '451-docs';
+  return new URLSearchParams(window.location.search).get("site") || "451-docs";
 }
 
 function siteParam() {
@@ -21,11 +21,12 @@ function siteParam() {
 }
 
 function resolveHref(post) {
-  const id    = getSiteId();
+  const id = getSiteId();
   const extra = `&site=${encodeURIComponent(id)}`;
-  if (post.slug) return `post.html?slug=${encodeURIComponent(post.slug)}${extra}`;
+  if (post.slug)
+    return `post.html?slug=${encodeURIComponent(post.slug)}${extra}`;
   if (post.outputFile) return post.outputFile;
-  return '#';
+  return "#";
 }
 
 // =====================================================
@@ -35,10 +36,10 @@ function resolveHref(post) {
 // =====================================================
 function applyAccent(accent, accentDark) {
   if (!accent) return;
-  const existing = document.getElementById('site-accent');
+  const existing = document.getElementById("site-accent");
   if (existing) existing.remove();
-  const style = document.createElement('style');
-  style.id = 'site-accent';
+  const style = document.createElement("style");
+  style.id = "site-accent";
   style.textContent = `
     :root     { --accent: ${accent}; }
     body.dark { --accent: ${accentDark || accent}; }
@@ -62,34 +63,41 @@ function applyUI(ui) {
   };
 
   if (ui.siteTitle) document.title = ui.siteTitle;
-  setHTML('hero-label',    ui.heroLabel);
-  setHTML('hero-title',    ui.heroTitle);
-  setText('hero-owner',    ui.ownerLabel);
-  setText('hero-bio',      ui.heroBio);
-  setHTML('posts-heading', ui.postsHeading);
-  setHTML('footer-text',   ui.footerText);
+  setHTML("hero-label", ui.heroLabel);
+  setHTML("hero-title", ui.heroTitle);
+  setText("hero-owner", ui.ownerLabel);
+  setText("hero-bio", ui.heroBio);
+  setHTML("posts-heading", ui.postsHeading);
+  setHTML("footer-text", ui.footerText);
 
-  const avatar = document.getElementById('hero-avatar');
+  const avatar = document.getElementById("hero-avatar");
   if (avatar) {
     if (ui.avatarUrl) {
       avatar.src = ui.avatarUrl;
     } else {
-      document.getElementById('hero-avatar-wrap')?.style.setProperty('display', 'none');
+      document
+        .getElementById("hero-avatar-wrap")
+        ?.style.setProperty("display", "none");
     }
   }
 
-  const linksEl = document.getElementById('profile-links');
+  const linksEl = document.getElementById("profile-links");
   if (linksEl && Array.isArray(ui.links)) {
-    linksEl.innerHTML = ui.links.map(link => `
+    linksEl.innerHTML = ui.links
+      .map(
+        (link) => `
       <a href="${link.href}" target="_blank" rel="noopener" class="profile-link">
         ${iconSVG(link.icon)}${link.label}
       </a>
-    `).join('');
+    `,
+      )
+      .join("");
   }
 }
 
 function iconSVG(icon) {
-  if (icon === 'github') return `
+  if (icon === "github")
+    return `
     <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
       <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57
         0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695
@@ -100,22 +108,22 @@ function iconSVG(icon) {
         0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3
         0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
     </svg>`;
-  return '';
+  return "";
 }
 
 // =====================================================
 // カード生成
 // =====================================================
 function hasThumbnail(p) {
-  return typeof p.thumbnail === 'string' && p.thumbnail.trim() !== '';
+  return typeof p.thumbnail === "string" && p.thumbnail.trim() !== "";
 }
 
 function createPublicCard(p) {
-  const a = document.createElement('a');
-  a.href             = resolveHref(p);
-  a.className        = 'card';
-  a.dataset.date     = p.date     || '';
-  a.dataset.category = p.category || '';
+  const a = document.createElement("a");
+  a.href = resolveHref(p);
+  a.className = "card";
+  a.dataset.date = p.date || "";
+  a.dataset.category = p.category || "";
 
   const thumbHtml = hasThumbnail(p)
     ? `<img src="${p.thumbnail}" alt="" loading="lazy" />`
@@ -125,7 +133,7 @@ function createPublicCard(p) {
     <div class="card-img-wrap">${thumbHtml}</div>
     <div class="card-body">
       <h2 class="card-title">${p.title}</h2>
-      <p class="card-desc">${p.description || ''}</p>
+      <p class="card-desc">${p.description || ""}</p>
       <span class="card-date">${formatDateStr(p.date)}</span>
     </div>
   `;
@@ -133,13 +141,13 @@ function createPublicCard(p) {
 }
 
 function createProtectedCard(p) {
-  const id    = getSiteId();
+  const id = getSiteId();
   const extra = `&site=${encodeURIComponent(id)}`;
-  const a = document.createElement('a');
-  a.href             = `protected-post.html?slug=${encodeURIComponent(p.slug)}${extra}`;
-  a.className        = 'card card--protected';
-  a.dataset.date     = p.date     || '';
-  a.dataset.category = p.category || '';
+  const a = document.createElement("a");
+  a.href = `protected-post.html?slug=${encodeURIComponent(p.slug)}${extra}`;
+  a.className = "card card--protected";
+  a.dataset.date = p.date || "";
+  a.dataset.category = p.category || "";
   a.innerHTML = `
     <div class="card-img-wrap">
       <div class="card-protected-thumb">🔒</div>
@@ -147,7 +155,7 @@ function createProtectedCard(p) {
     <div class="card-body">
       <span class="card-protected-badge">Protected</span>
       <h2 class="card-title">${p.title}</h2>
-      <p class="card-desc">${p.excerpt || 'パスワードで保護された記事です。'}</p>
+      <p class="card-desc">${p.excerpt || "パスワードで保護された記事です。"}</p>
       <span class="card-date">${formatDateStr(p.date)}</span>
     </div>
   `;
@@ -158,9 +166,9 @@ function createProtectedCard(p) {
 // 初期化
 // =====================================================
 async function initialize() {
-  const container = document.getElementById('home-container');
-  const countEl   = document.getElementById('posts-count');
-  const tocList   = document.getElementById('tocList');
+  const container = document.getElementById("home-container");
+  const countEl = document.getElementById("posts-count");
+  const tocList = document.getElementById("tocList");
 
   const sp = siteParam();
 
@@ -175,12 +183,12 @@ async function initialize() {
       publicPosts = Array.isArray(data.posts) ? data.posts : [];
     }
   } catch (e) {
-    console.warn('Failed to fetch /api/posts:', e);
+    console.warn("Failed to fetch /api/posts:", e);
   }
 
-  const allCards = publicPosts.map(p => ({
+  const allCards = publicPosts.map((p) => ({
     card: createPublicCard(p),
-    date: p.date || '',
+    date: p.date || "",
   }));
 
   // 2. 保護記事（BASE_PROTECTED がないサイトは [] が返る）
@@ -188,31 +196,33 @@ async function initialize() {
     const res = await fetch(`/api/protected-posts${sp}`);
     if (res.ok) {
       const protectedPosts = await res.json();
-      protectedPosts.forEach(p => {
-        allCards.push({ card: createProtectedCard(p), date: p.date || '' });
+      protectedPosts.forEach((p) => {
+        allCards.push({ card: createProtectedCard(p), date: p.date || "" });
       });
     }
   } catch (e) {
-    console.warn('Failed to fetch /api/protected-posts:', e);
+    console.warn("Failed to fetch /api/protected-posts:", e);
   }
 
   // 3. 日付降順ソート
   allCards.sort((a, b) => b.date.localeCompare(a.date));
 
   // 4. カテゴリ収集
-  const categories = [...new Set(
-    allCards.map(({ card }) => card.dataset.category).filter(Boolean)
-  )].sort();
+  const categories = [
+    ...new Set(
+      allCards.map(({ card }) => card.dataset.category).filter(Boolean),
+    ),
+  ].sort();
 
   // 5. サイドバー：カテゴリフィルター + Posts 一覧
   if (tocList) {
     if (categories.length > 0) {
-      const filterWrap = document.createElement('div');
-      filterWrap.id = 'category-filters';
-      filterWrap.style.cssText = 'margin-bottom: 20px;';
+      const filterWrap = document.createElement("div");
+      filterWrap.id = "category-filters";
+      filterWrap.style.cssText = "margin-bottom: 20px;";
 
       const makeBtn = (label, value) => {
-        const btn = document.createElement('button');
+        const btn = document.createElement("button");
         btn.textContent = label;
         btn.dataset.cat = value;
         btn.style.cssText = `
@@ -224,43 +234,44 @@ async function initialize() {
           border-bottom: 2px solid transparent;
           transition: color 0.2s, border-color 0.2s;
         `;
-        btn.addEventListener('mouseenter', () => {
-          if (!btn.classList.contains('active')) btn.style.color = 'var(--text)';
+        btn.addEventListener("mouseenter", () => {
+          if (!btn.classList.contains("active"))
+            btn.style.color = "var(--text)";
         });
-        btn.addEventListener('mouseleave', () => {
-          if (!btn.classList.contains('active')) btn.style.color = 'var(--sub)';
+        btn.addEventListener("mouseleave", () => {
+          if (!btn.classList.contains("active")) btn.style.color = "var(--sub)";
         });
         return btn;
       };
 
-      const allBtn = makeBtn('All', '');
-      allBtn.classList.add('active');
-      allBtn.style.color = 'var(--text)';
-      allBtn.style.borderBottomColor = 'var(--accent)';
+      const allBtn = makeBtn("All", "");
+      allBtn.classList.add("active");
+      allBtn.style.color = "var(--text)";
+      allBtn.style.borderBottomColor = "var(--accent)";
       filterWrap.appendChild(allBtn);
-      categories.forEach(cat => filterWrap.appendChild(makeBtn(cat, cat)));
+      categories.forEach((cat) => filterWrap.appendChild(makeBtn(cat, cat)));
 
-      filterWrap.addEventListener('click', e => {
-        const btn = e.target.closest('button[data-cat]');
+      filterWrap.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-cat]");
         if (!btn) return;
         const selected = btn.dataset.cat;
 
-        filterWrap.querySelectorAll('button').forEach(b => {
-          b.classList.remove('active');
-          b.style.color = 'var(--sub)';
-          b.style.borderBottomColor = 'transparent';
+        filterWrap.querySelectorAll("button").forEach((b) => {
+          b.classList.remove("active");
+          b.style.color = "var(--sub)";
+          b.style.borderBottomColor = "transparent";
         });
-        btn.classList.add('active');
-        btn.style.color = 'var(--text)';
-        btn.style.borderBottomColor = 'var(--accent)';
+        btn.classList.add("active");
+        btn.style.color = "var(--text)";
+        btn.style.borderBottomColor = "var(--accent)";
 
-        container.querySelectorAll('.card').forEach(card => {
+        container.querySelectorAll(".card").forEach((card) => {
           card.style.display =
-            (!selected || card.dataset.category === selected) ? '' : 'none';
+            !selected || card.dataset.category === selected ? "" : "none";
         });
-        tocList.querySelectorAll('a[data-cat]').forEach(a => {
+        tocList.querySelectorAll("a[data-cat]").forEach((a) => {
           a.style.display =
-            (!selected || a.dataset.cat === selected) ? '' : 'none';
+            !selected || a.dataset.cat === selected ? "" : "none";
         });
       });
 
@@ -268,30 +279,35 @@ async function initialize() {
     }
 
     allCards.forEach(({ card }) => {
-      const a = document.createElement('a');
-      a.href        = card.href;
-      a.textContent = card.querySelector('.card-title')?.textContent || '(no title)';
-      a.dataset.cat = card.dataset.category || '';
+      const a = document.createElement("a");
+      a.href = card.href;
+      a.textContent =
+        card.querySelector(".card-title")?.textContent || "(no title)";
+      a.dataset.cat = card.dataset.category || "";
       tocList.appendChild(a);
     });
   }
 
   // 6. カードをレンダリング
-  if (countEl) countEl.textContent = allCards.length + ' posts';
+  if (countEl) countEl.textContent = allCards.length + " posts";
   allCards.forEach(({ card }) => container.appendChild(card));
 }
 
-document.addEventListener('DOMContentLoaded', initialize);
+document.addEventListener("DOMContentLoaded", initialize);
 
 // =====================================================
 // サイドバー開閉
 // =====================================================
 (function () {
-  const toggle  = document.getElementById('tocToggle');
-  const overlay = document.getElementById('overlay');
+  const toggle = document.getElementById("tocToggle");
+  const overlay = document.getElementById("overlay");
   if (!toggle || !overlay) return;
-  const close = () => document.body.classList.remove('toc-open');
-  toggle.addEventListener('click', () => document.body.classList.toggle('toc-open'));
-  overlay.addEventListener('click', close);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  const close = () => document.body.classList.remove("toc-open");
+  toggle.addEventListener("click", () =>
+    document.body.classList.toggle("toc-open"),
+  );
+  overlay.addEventListener("click", close);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
 })();

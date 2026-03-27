@@ -1,4 +1,6 @@
-﻿*, *::before, *::after {
+﻿*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -23,14 +25,14 @@ body.dark {
   --sub: #6b7280;
   --border: #e5e7eb;
   --accent: #3b82f6;
-  --shadow: rgba(0,0,0,0.15);
+  --shadow: rgba(0, 0, 0, 0.15);
 }
 
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   overflow-x: hidden;
 }
 
@@ -59,7 +61,7 @@ body {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--accent);
-  background: rgba(59,130,246,0.12);
+  background: rgba(59, 130, 246, 0.12);
   padding: 4px 14px;
   border-radius: 20px;
   margin-bottom: 16px;
@@ -67,7 +69,7 @@ body {
 
 .hero h1,
 .hero-title {
-  font-family: 'DM Serif Display', serif;
+  font-family: "DM Serif Display", serif;
   font-size: clamp(2rem, 5vw, 3rem);
   color: var(--primary);
   margin-bottom: 10px;
