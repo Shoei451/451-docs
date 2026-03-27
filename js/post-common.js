@@ -82,7 +82,7 @@ function buildHomeHref(siteId) {
 
 function applyHomeLinks(siteId, root = document) {
   const href = buildHomeHref(siteId);
-  root.querySelectorAll('a[href="index.html"]').forEach((link) => {
+  root.querySelectorAll("a.back-link, a[data-home-link]").forEach((link) => {
     link.href = href;
   });
 }

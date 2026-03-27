@@ -51,7 +51,7 @@ function showSlugError(msg) {
     <p style="font-size:2rem; margin-bottom:12px;">🔍</p>
     <h2 style="margin-bottom:8px;">Post not found</h2>
     <p style="color:var(--sub); font-size:0.9rem; margin-bottom:20px;">${msg}</p>
-    <a href="index.html"
+    <a href="index.html" data-home-link
        style="display:inline-block; padding:10px 24px; background:var(--accent);
               color:#fff; border-radius:8px; text-decoration:none; font-weight:600;">
       Back to Home
