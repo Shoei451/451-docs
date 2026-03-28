@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Components — 451-docs Design System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --max-width: 900px;
+      --bg:      #ffffff; --surface: #f9fafb;
+      --text:    #222;    --sub:     #6b7280;
+      --border:  #e5e7eb; --accent:  #3b82f6;
+      --shadow:  rgba(0,0,0,0.1);
+    }
+    body.dark {
+      --bg: #0f172a; --surface: #1e293b;
+      --text: #f1f5f9; --sub: #94a3b8;
+      --border: #334155; --accent: #60a5fa;
+      --shadow: rgba(0,0,0,0.5);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.8;
+    }
+
+    /* ── Layout ── */
+    .page { max-width: var(--max-width); margin: 0 auto; padding: 80px 32px 120px; }
+
+    /* ── Nav ── */
+    nav.topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 56px; z-index: 100;
+    }
+    body.dark nav.topbar { background: rgba(15,23,42,0.85); }
+    nav.topbar .logo {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.1rem; color: var(--text); text-decoration: none;
+    }
+    nav.topbar .links { display: flex; gap: 24px; list-style: none; }
+    nav.topbar .links a { color: var(--sub); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    nav.topbar .links a:hover { color: var(--text); }
+
+    /* ── Theme toggle（theme.css と同じ構造） ── */
+    .logo-switches { position: fixed; top: 80px; right: 20px; z-index: 200; }
+    #theme-toggle {
+      background: var(--surface); border: 2px solid var(--accent);
+      border-radius: 50%; padding: 10px; cursor: pointer;
+      box-shadow: 0 4px 12px var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #moon, #sun { display: none; width: 20px; height: 20px; stroke: var(--accent); }
+    body.dark #sun { display: block; }
+    body:not(.dark) #moon { display: block; }
+
+    /* ── Section headers ── */
+    .section { margin-bottom: 80px; }
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 8px; font-weight: 600;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 2rem; margin-bottom: 32px;
+      border-bottom: 1px solid var(--border); padding-bottom: 16px;
+    }
+
+    /* ── Typography ── */
+    .type-demo h1 { font-family: 'DM Serif Display', Georgia, serif; font-size: 2.5rem; line-height: 1.2; margin-bottom: 8px; }
+    .type-demo h2 { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.8rem; margin-bottom: 8px; }
+    .type-demo h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+    .type-demo .serif-italic { font-family: 'DM Serif Display', Georgia, serif; font-style: italic; color: var(--accent); }
+    .type-demo p { color: var(--sub); font-size: 0.95rem; margin-bottom: 4px; }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; text-decoration: none; color: var(--text);
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px var(--shadow); border-color: var(--accent); }
+    .card-img { height: 140px; overflow: hidden; }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .card:hover .card-img img { transform: scale(1.04); }
+    .card-body { padding: 16px 18px 18px; }
+    .card-badge {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: var(--accent); color: #fff;
+      padding: 2px 10px; border-radius: 20px; margin-bottom: 8px;
+    }
+    .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+    .card-desc { font-size: 0.82rem; color: var(--sub); line-height: 1.6;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-date { font-size: 0.72rem; color: var(--sub); margin-top: 10px; display: block; }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 20px; border-radius: 999px; font-family: inherit;
+      font-size: 0.88rem; font-weight: 500; cursor: pointer;
+      border: 2px solid; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--sub); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: transparent; border-color: #ef4444; color: #ef4444; }
+    .btn-danger:hover { background: #ef4444; color: #fff; }
+
+    /* ── Profile hero ── */
+    .profile-hero { display: flex; gap: 32px; align-items: flex-start; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden;
+      border: 2px solid var(--border); flex-shrink: 0; }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-label { font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .profile-name { font-family: 'DM Serif Display', Georgia, serif; font-size: 2.2rem; line-height: 1.1; margin-bottom: 12px; }
+    .profile-name em { font-style: italic; color: var(--accent); }
+    .profile-bio { font-size: 0.9rem; color: var(--sub); max-width: 420px; margin-bottom: 16px; }
+    .profile-links { display: flex; gap: 10px; flex-wrap: wrap; }
+    .profile-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; font-weight: 500; color: var(--sub);
+      text-decoration: none; padding: 6px 14px;
+      border: 1.5px solid var(--border); border-radius: 999px;
+      background: var(--surface); transition: all 0.2s;
+    }
+    .profile-link:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+
+    /* ── Article elements ── */
+    .art-demo h2 { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.5rem; margin: 0 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .art-demo p { margin-bottom: 16px; color: var(--text); }
+    .art-demo blockquote { border-left: 4px solid var(--accent); margin: 20px 0; padding: 12px 20px; color: var(--sub); background: var(--surface); border-radius: 0 8px 8px 0; }
+    .art-demo code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; }
+    .art-demo pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; overflow-x: auto; margin-bottom: 16px; }
+    .art-demo pre code { background: none; border: none; padding: 0; }
+    .art-demo table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+    .art-demo th, .art-demo td { padding: 10px 14px; border: 1px solid var(--border); text-align: left; }
+    .art-demo th { background: var(--surface); font-weight: 600; }
+    .art-demo mark { background: #fef08a; padding: 0.1em 0.2em; border-radius: 2px; }
+
+    /* ── TOC box ── */
+    .toc-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+    .toc-box h4 { font-family: 'DM Serif Display', Georgia, serif; margin-bottom: 10px; }
+    .toc-box ul { list-style: none; padding: 0; }
+    .toc-box li { margin: 5px 0; }
+    .toc-box a { text-decoration: none; color: var(--sub); font-size: 0.9rem; }
+    .toc-box a:hover { color: var(--accent); }
+    .toc-box .h3 { padding-left: 16px; font-size: 0.85rem; }
+
+    /* ── Form ── */
+    .form-demo { display: flex; flex-direction: column; gap: 16px; max-width: 400px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.88rem; font-weight: 500; }
+    .form-input {
+      padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-family: inherit; font-size: 0.95rem;
+      background: var(--bg); color: var(--text); transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .form-input::placeholder { color: var(--sub); }
+
+    /* ── Protected card ── */
+    .card--protected { border-color: var(--accent); }
+    .card-protected-thumb {
+      display: flex; align-items: center; justify-content: center;
+      height: 140px; font-size: 2.5rem; background: var(--surface);
+    }
+
+    /* ── Footer ── */
+    .demo-footer { text-align: center; padding: 40px 24px; color: var(--sub); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 80px; }
+
+    @media (max-width: 600px) {
+      .profile-hero { flex-direction: column; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ナビバー -->
+<nav class="topbar">
+  <a href="#" class="logo">My <em style="font-style:italic;color:var(--accent)">Notes.</em></a>
+  <ul class="links">
+    <li><a href="#typography">Typography</a></li>
+    <li><a href="#cards">Cards</a></li>
+    <li><a href="#buttons">Buttons</a></li>
+    <li><a href="#article">Article</a></li>
+  </ul>
+</nav>
+
+<!-- ダークモードトグル（theme.css / theme-toggle.js と同じ構造） -->
+<span class="logo-switches">
+  <button id="theme-toggle" aria-label="Toggle Theme">
+    <svg id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+</span>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="section" style="padding-top: 16px;">
+    <p class="section-label">Design System</p>
+    <h1 class="section-title">451-docs Components</h1>
+    <p style="color:var(--sub); max-width:560px;">
+      451-docs プロジェクトで使用しているコンポーネント集。
+      <strong>DM Serif Display + DM Sans</strong> フォント、
+      <strong>ブルーアクセント</strong>、ダークモード対応。
+    </p>
+  </div>
+
+  <!-- PROFILE HERO -->
+  <div class="section" id="profile">
+    <p class="section-label">Component</p>
+    <h2 class="section-title">Profile Hero</h2>
+    <div class="profile-hero">
+      <div class="profile-avatar">
+        <img src="https://picsum.photos/seed/profile42/200/200" alt="Profile">
+      </div>
+      <div>
+        <p class="profile-label">Personal Notes</p>
+        <h1 class="profile-name">My<br><em>Notes.</em></h1>
+        <p class="profile-bio">高校生。歴史・数学・コードが好き。思考の記録をここに残しています。</p>
+        <div class="profile-links">
+          <a href="#" class="profile-link">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPOGRAPHY -->
+  <div class="section" id="typography">
+    <p class="section-label">Component</p>
+    <h2 class="section-title">Typography</h2>
+    <div class="type-demo">
+      <h1>DM Serif Display<br><span class="serif-italic">Italic variant</span></h1>
+      <p>見出し用フォント。h1・h2・プロフィール名に使用</p>
+      <br>
+      <h2>Section Heading</h2>
+      <p>h2サイズ。記事のセクションタイトルに使用</p>
+      <br>
+      <h3>Subsection Heading</h3>
+      <p>h3サイズ。DM Sans使用</p>
+      <br>
+      <p style="font-size:1rem; color:var(--text)">本文テキスト — DM Sans 400。読みやすさを重視した line-height: 1.9</p>
+      <p style="font-size:0.88rem; color:var(--sub)">サブテキスト — --sub カラー。日付・説明文・メタ情報に使用</p>
+      <p style="font-family:'JetBrains Mono',monospace; font-size:0.88rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:4px 10px; display:inline-block; margin-top:8px;">JetBrains Mono — コード用</p>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="section" id="cards">
+    <p class="section-label">Component</p>
+    <h2 class="section-title">Cards</h2>
+    <div class="card-grid">
+      <a href="#" class="card">
+        <div class="card-img"><img src="https://picsum.photos/seed/1/600/300" alt=""></div>
+        <div class="card-body">
+          <h3 class="card-title">中国王朝史まとめ</h3>
+          <p class="card-desc">殷から唐まで、主要王朝の制度・文化を表形式でまとめました。</p>
+          <span class="card-date">2026年2月23日</span>
+        </div>
+      </a>
+      <a href="#" class="card">
+        <div class="card-img"><img src="https://picsum.photos/seed/2/600/300" alt=""></div>
+        <div class="card-body">
+          <span class="card-badge">New</span>
+          <h3 class="card-title">政治・経済 一問一答</h3>
+          <p class="card-desc">3学期期末試験対策。重要用語を整理しました。</p>
+          <span class="card-date">2026年2月23日</span>
+        </div>
+      </a>
+      <a href="#" class="card card--protected">
+        <div class="card-img"><div class="card-protected-thumb">🔒</div></div>
+        <div class="card-body">
+          <span class="card-badge">Protected</span>
+          <h3 class="card-title">非公開ノート</h3>
+          <p class="card-desc">パスワードで保護された記事です。</p>
+          <span class="card-date">2026年2月25日</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="section" id="buttons">
+    <p class="section-label">Component</p>
+    <h2 class="section-title">Buttons & Links</h2>
+    <div class="btn-row">
+      <button class="btn btn-primary">Primary Action</button>
+      <button class="btn btn-ghost">Ghost Button</button>
+      <button class="btn btn-danger">Delete</button>
+      <a href="#" class="btn btn-ghost" style="border-radius:8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Home
+      </a>
+    </div>
+  </div>
+
+  <!-- ARTICLE ELEMENTS -->
+  <div class="section" id="article">
+    <p class="section-label">Component</p>
+    <h2 class="section-title">Article Elements</h2>
+
+    <div style="margin-bottom:24px;">
+      <div class="toc-box">
+        <h4>目次</h4>
+        <ul>
+          <li><a href="#">§1 イントロダクション</a></li>
+          <li class="h3"><a href="#">§1.1 背景</a></li>
+          <li><a href="#">§2 本論</a></li>
+          <li class="h3"><a href="#">§2.1 分析</a></li>
+          <li><a href="#">§3 まとめ</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="art-demo">
+      <h2>セクション見出し（h2）</h2>
+      <p>本文テキスト。<strong>太字</strong>、<em>イタリック</em>、<code>インラインコード</code>、<mark>ハイライト</mark>が使える。</p>
+      <blockquote>引用テキスト。参考文献や重要な一節を入れる場所。</blockquote>
+      <pre><code>// コードブロック例
+function greet(name) {
+  return `Hello, ${name}!`;
+}</code></pre>
+      <table>
+        <tr><th>王朝</th><th>年代</th><th>特徴</th></tr>
+        <tr><td>秦</td><td>BC 221〜206</td><td>初の統一、郡県制</td></tr>
+        <tr><td>漢</td><td>BC 206〜AD 220</td><td>儒教国教化、シルクロード</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="section" id="form">
+    <p class="section-label">Component</p>
+    <h2 class="section-title">Form Elements</h2>
+    <div class="form-demo">
+      <div class="form-group">
+        <label class="form-label" for="demo-input">テキスト入力</label>
+        <input class="form-input" type="text" id="demo-input" placeholder="入力してください">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="demo-pw">パスワード（保護記事で使用）</label>
+        <input class="form-input" type="password" id="demo-pw" placeholder="Password">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="demo-ta">テキストエリア</label>
+        <textarea class="form-input" id="demo-ta" rows="3" placeholder="複数行の入力..." style="resize:vertical;"></textarea>
+      </div>
+      <button class="btn btn-primary" style="align-self:flex-start;">送信する</button>
+    </div>
+  </div>
+
+</div>
+
+<footer class="demo-footer">
+  451-docs Design System Components &nbsp;·&nbsp; Shoei451
+</footer>
+
+<script>
+  /* theme-toggle.js と同じロジック */
+  const themeToggle = document.getElementById('theme-toggle');
+  function setTheme(isDark) {
+    document.body.classList.toggle('dark', isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }
+  const saved = localStorage.getItem('theme');
+  if (saved) {
+    setTheme(saved === 'dark');
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setTheme(true);
+  }
+  themeToggle.addEventListener('click', () => {
+    setTheme(!document.body.classList.contains('dark'));
+  });
+</script>
+</body>
+</html>
