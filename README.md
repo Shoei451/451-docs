@@ -119,9 +119,8 @@ thumbnail: https://example.com/image.png
 category: 受験
 tags: 東大, 英語
 password: mysecret
-components:
-  katex: false
-  highlight: false
+components.katex: false
+components.highlight: false
 ---
 
 # Content here...
@@ -133,10 +132,10 @@ The password is verified server-side by the Netlify Function. It is never sent t
 
 Controls which libraries `post.html` / `protected-post.html` load for this post. Omitting the block defaults both to `false`.
 
-| Key | Default | When to enable |
-|---|---|---|
-| `katex` | `false` | Post contains math expressions (`$...$` or `$$...$$`) |
-| `highlight` | `false` | Post contains fenced code blocks |
+| Key         | Default | When to enable                                        |
+| ----------- | ------- | ----------------------------------------------------- |
+| `katex`     | `false` | Post contains math expressions (`$...$` or `$$...$$`) |
+| `highlight` | `false` | Post contains fenced code blocks                      |
 
 ### Frontmatter rules
 
@@ -168,8 +167,8 @@ Link as: `post.html?slug=math/calculus/limits`
 
 Set in Netlify → Site settings → Environment variables:
 
-| Variable | Value | Notes |
-|---|---|---|
+| Variable       | Value      | Notes                                                                                                                                        |
+| -------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GITHUB_TOKEN` | GitHub PAT | Needs `contents: read` on `md-contents`. Fine-grained PAT recommended. Without this, the GitHub API falls back to 60 req/hr unauthenticated. |
 
 ---
@@ -201,12 +200,12 @@ Content updates in `md-contents` are live instantly without a Netlify deploy.
 
 All routes return `application/json` with CORS headers (`Access-Control-Allow-Origin: *`).
 
-| Route | Method | Description |
-|---|---|---|
-| `/api/posts` | GET | Public post metadata list, sorted by date descending. No content field. |
-| `/api/post?slug=` | GET | Full public post including parsed Markdown content. `404` if not found. |
-| `/api/protected-posts` | GET | Protected post metadata list (no content, no password). Cached 60s. |
-| `/api/protected-post?slug=&password=` | GET | Full protected post after server-side password verification. `401` on wrong password or missing post. |
+| Route                                 | Method | Description                                                                                           |
+| ------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------- |
+| `/api/posts`                          | GET    | Public post metadata list, sorted by date descending. No content field.                               |
+| `/api/post?slug=`                     | GET    | Full public post including parsed Markdown content. `404` if not found.                               |
+| `/api/protected-posts`                | GET    | Protected post metadata list (no content, no password). Cached 60s.                                   |
+| `/api/protected-post?slug=&password=` | GET    | Full protected post after server-side password verification. `401` on wrong password or missing post. |
 
 ---
 
@@ -216,14 +215,14 @@ Font stack: `DM Serif Display` (headings) + `DM Sans` (body).
 
 CSS variables (defined in `css/styles.css`):
 
-| Variable | Light | Dark |
-|---|---|---|
-| `--bg` | `#ffffff` | `#0f172a` |
+| Variable    | Light     | Dark      |
+| ----------- | --------- | --------- |
+| `--bg`      | `#ffffff` | `#0f172a` |
 | `--surface` | `#f9fafb` | `#1e293b` |
-| `--text` | `#222` | `#f1f5f9` |
-| `--sub` | `#6b7280` | `#94a3b8` |
-| `--border` | `#e5e7eb` | `#334155` |
-| `--accent` | `#3b82f6` | `#60a5fa` |
+| `--text`    | `#222`    | `#f1f5f9` |
+| `--sub`     | `#6b7280` | `#94a3b8` |
+| `--border`  | `#e5e7eb` | `#334155` |
+| `--accent`  | `#3b82f6` | `#60a5fa` |
 
 Dark mode is toggled by `body.dark` and persisted to `localStorage` via `js/theme-toggle.js`.
 
@@ -235,10 +234,10 @@ Dark mode is toggled by `body.dark` and persisted to `localStorage` via `js/them
 
 See [`md/roadmap.md`](./md/roadmap.md) for the full execution roadmap.
 
-| Phase | Status | Description |
-|---|---|---|
-| 1 — slug system | ✅ Done | Single `post.html`, no per-post HTML files |
-| 1 — Netlify Functions | ✅ Done | md-contents served via GitHub API at runtime |
-| 2 — Protected posts | ✅ Done | Server-side password verification, no Supabase dependency |
-| 3 — RSS | Planned | |
-| 3 — JS/CSS consolidation | Planned | |
+| Phase                    | Status  | Description                                               |
+| ------------------------ | ------- | --------------------------------------------------------- |
+| 1 — slug system          | ✅ Done | Single `post.html`, no per-post HTML files                |
+| 1 — Netlify Functions    | ✅ Done | md-contents served via GitHub API at runtime              |
+| 2 — Protected posts      | ✅ Done | Server-side password verification, no Supabase dependency |
+| 3 — RSS                  | Planned |                                                           |
+| 3 — JS/CSS consolidation | Planned |                                                           |

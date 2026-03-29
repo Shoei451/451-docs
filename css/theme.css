@@ -14,12 +14,17 @@
   box-shadow: 0 4px 12px var(--shadow);
 }
 
-#moon, #sun {
+#moon,
+#sun {
   display: none;
   width: 22px;
   height: 22px;
   stroke: var(--accent);
 }
 
-body.dark #sun  { display: block; }
-body:not(.dark) #moon { display: block; }
+body.dark #sun {
+  display: block;
+}
+body:not(.dark) #moon {
+  display: block;
+}

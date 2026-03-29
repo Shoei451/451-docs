@@ -7,7 +7,7 @@
   --sub: #6b7280;
   --border: #e5e7eb;
   --accent: #3b82f6;
-  --shadow: rgba(0,0,0,0.15);
+  --shadow: rgba(0, 0, 0, 0.15);
 }
 
 body.dark {
@@ -17,7 +17,7 @@ body.dark {
   --sub: #94a3b8;
   --border: #334155;
   --accent: #60a5fa;
-  --shadow: rgba(0,0,0,0.5);
+  --shadow: rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -33,7 +33,7 @@ body {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   opacity: 0;
@@ -58,7 +58,7 @@ body.toc-open .overlay {
   padding: 100px 30px;
   overflow-y: auto;
 
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 
@@ -70,7 +70,7 @@ body.toc-open .overlay {
 }
 
 body.dark .toc {
-  background: rgba(15,23,42,0.85);
+  background: rgba(15, 23, 42, 0.85);
 }
 
 body.toc-open .toc {
@@ -91,11 +91,11 @@ body.toc-open .toc {
 }
 /* サイドバー */
 .toc .h2 {
-  padding-left: 12px;   /* ★追加 */
+  padding-left: 12px; /* ★追加 */
 }
 
 .toc .h3 {
-  padding-left: 24px;   /* 16px → 24px に変更 */
+  padding-left: 24px; /* 16px → 24px に変更 */
   font-size: 0.9rem;
 }
 
@@ -188,14 +188,13 @@ body.toc-open .toc {
 }
 /* インライン目次 */
 .toc-box .h2 {
-  padding-left: 12px;   /* ★追加 */
+  padding-left: 12px; /* ★追加 */
 }
 
 .toc-box .h3 {
-  padding-left: 24px;   /* 16px → 24px に変更 */
+  padding-left: 24px; /* 16px → 24px に変更 */
   font-size: 0.9rem;
 }
-
 
 .toc .h4,
 .toc-box .h4 {
@@ -230,7 +229,8 @@ table {
   margin: 0;
 }
 
-th, td {
+th,
+td {
   padding: 12px 16px;
   border: 1px solid var(--border);
   text-align: left;
@@ -258,7 +258,6 @@ input[type="checkbox"] {
   accent-color: var(--accent);
   margin-right: 6px;
 }
-
 
 /* =====================
    BACK LINK (post pages)
@@ -306,7 +305,6 @@ input[type="checkbox"] {
 body:has(.back-link) .toc-toggle {
   left: 148px;
 }
-
 
 /* =====================
    FOOTER
@@ -356,6 +354,12 @@ body:has(.back-link) .toc-toggle {
 }
 
 @keyframes loader-advance {
-  0%   { width: 15%; opacity: 1; }
-  100% { width: 82%; opacity: 1; }
+  0% {
+    width: 15%;
+    opacity: 1;
+  }
+  100% {
+    width: 82%;
+    opacity: 1;
+  }
 }

@@ -3,6 +3,5 @@
   "target_repo": "Shoei451/md-contents",
   "target_branch": "main",
   "output_path": "451-docs",
-  "exclude": [".git", 
-  "node_modules", ".github"]
+  "exclude": [".git", "node_modules", ".github"]
 }

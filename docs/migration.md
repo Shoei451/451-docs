@@ -23,11 +23,11 @@ The migration objective is complete:
 
 ## What changed from the old model
 
-| Old model | Current model |
-|---|---|
-| Local markdown copied into this repo and transformed during build | Markdown stays in private repo and is fetched at request time |
-| Build artifacts (`posts-data` or per-post generated files) used for rendering | Netlify Functions return metadata/post payloads directly |
-| Mixed client-heavy protected flow | Password verification handled on server function |
+| Old model                                                                     | Current model                                                 |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Local markdown copied into this repo and transformed during build             | Markdown stays in private repo and is fetched at request time |
+| Build artifacts (`posts-data` or per-post generated files) used for rendering | Netlify Functions return metadata/post payloads directly      |
+| Mixed client-heavy protected flow                                             | Password verification handled on server function              |
 
 ## Important post-migration note
 

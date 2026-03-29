@@ -2,7 +2,11 @@
    FONTS
 ===================== */
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "DM Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 /* =====================
@@ -17,7 +21,7 @@ body {
 }
 
 .profile-hero::after {
-  content: '';
+  content: "";
   display: block;
   height: 1px;
   background: linear-gradient(90deg, var(--accent), transparent);
@@ -70,9 +74,9 @@ body {
 }
 
 .profile-name {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: "DM Serif Display", Georgia, serif;
   font-size: clamp(2.6rem, 6vw, 4rem);
-  line-height: 1.0;
+  line-height: 1;
   margin: 0 0 20px;
   color: var(--text);
 }
@@ -138,7 +142,7 @@ body {
 }
 
 .posts-heading {
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: "DM Serif Display", Georgia, serif;
   font-size: 1.5rem;
   margin: 0;
   color: var(--text);
@@ -167,7 +171,10 @@ body {
   text-decoration: none;
   color: var(--text);
   border: 1px solid var(--border);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .card:hover {
@@ -204,7 +211,7 @@ body {
 }
 
 .card-thumb-placeholder::after {
-  content: '';
+  content: "";
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -242,8 +249,6 @@ body {
   letter-spacing: 0.03em;
 }
 
-
-
 /* =====================
    RESPONSIVE
 ===================== */
@@ -268,10 +273,10 @@ body {
   }
 }
 
-#hero-owner{
-  font-family: 'DM Serif Display', Georgia, serif;
+#hero-owner {
+  font-family: "DM Serif Display", Georgia, serif;
   font-size: 20px;
-  line-height: 1.0;
+  line-height: 1;
   margin: 0 0 20px;
   color: var(--text);
 }

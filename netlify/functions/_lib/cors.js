@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * _lib/cors.js
@@ -6,14 +6,14 @@
  */
 
 const CORS = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type':                 'application/json',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Content-Type": "application/json",
 };
 
 function handleOptions(event) {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers: CORS, body: "" };
   }
   return null;
 }

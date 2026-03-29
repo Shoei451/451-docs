@@ -1,17 +1,17 @@
-'use strict';
+"use strict";
 
 /**
  * _lib/github.js
  * GitHub Contents API wrapper shared by all Netlify Functions.
  */
 
-const API = 'https://api.github.com';
+const API = "https://api.github.com";
 
 function ghHeaders() {
   const token = process.env.GITHUB_TOKEN;
   return {
-    'Accept':               'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
@@ -23,7 +23,7 @@ function ghHeaders() {
 async function listFiles(repo, basePath) {
   const res = await fetch(
     `${API}/repos/${repo}/contents/${basePath}?ref=main`,
-    { headers: ghHeaders() }
+    { headers: ghHeaders() },
   );
   if (res.status === 404) return [];
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
@@ -32,10 +32,10 @@ async function listFiles(repo, basePath) {
   const results = [];
 
   for (const item of items) {
-    if (item.type === 'file' && item.name.endsWith('.md')) {
+    if (item.type === "file" && item.name.endsWith(".md")) {
       results.push({ name: item.name, path: item.path });
-    } else if (item.type === 'dir') {
-      results.push(...await listFiles(repo, item.path));
+    } else if (item.type === "dir") {
+      results.push(...(await listFiles(repo, item.path)));
     }
   }
   return results;
@@ -48,12 +48,12 @@ async function listFiles(repo, basePath) {
 async function fetchRaw(repo, basePath, slug) {
   const res = await fetch(
     `${API}/repos/${repo}/contents/${basePath}/${slug}.md?ref=main`,
-    { headers: ghHeaders() }
+    { headers: ghHeaders() },
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
   const json = await res.json();
-  return Buffer.from(json.content, 'base64').toString('utf-8');
+  return Buffer.from(json.content, "base64").toString("utf-8");
 }
 
 module.exports = { listFiles, fetchRaw };
