@@ -96,9 +96,8 @@ date: 2026-03-10
 description: One-line description shown on the index card.
 thumbnail: https://example.com/image.png
 category: history
-components:
-  katex: false
-  highlight: false
+components.katex: false
+components.highlight: false
 ---
 
 # Content here...
@@ -131,6 +130,7 @@ The password is verified server-side by the Netlify Function. It is never sent t
 ### `components` field
 
 Controls which libraries `post.html` / `protected-post.html` load for this post. Omitting the block defaults both to `false`.
+The recommended syntax is `components.katex` / `components.highlight`. A nested `components:` block is also accepted for compatibility.
 
 | Key         | Default | When to enable                                        |
 | ----------- | ------- | ----------------------------------------------------- |
@@ -139,7 +139,7 @@ Controls which libraries `post.html` / `protected-post.html` load for this post.
 
 ### Frontmatter rules
 
-All fields must be written **without leading spaces**. Indented lines are interpreted as nested blocks (the `components:` key uses this intentionally). A misplaced space before `title:` will cause the parser to silently skip the field.
+All top-level fields must be written **without leading spaces**. Indented lines are interpreted as nested blocks. A misplaced space before `title:` will cause the parser to silently skip the field.
 
 ```yaml
 # ✓ correct

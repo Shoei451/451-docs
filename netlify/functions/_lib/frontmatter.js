@@ -6,9 +6,31 @@
  */
 
 const DEFAULT_COMPONENTS = {
-  "components.katex": false,
-  "components.highlight": false,
+  katex: false,
+  highlight: false,
 };
+
+function toBool(val, fallback = false) {
+  if (typeof val === "boolean") return val;
+  if (typeof val === "string") {
+    if (val === "true") return true;
+    if (val === "false") return false;
+  }
+  return fallback;
+}
+
+function normalizeComponents(meta) {
+  const nested =
+    meta && typeof meta.components === "object" ? meta.components : {};
+
+  return {
+    katex: toBool(nested.katex, toBool(meta?.["components.katex"], false)),
+    highlight: toBool(
+      nested.highlight,
+      toBool(meta?.["components.highlight"], false),
+    ),
+  };
+}
 
 /**
  * Parse YAML-like frontmatter from a raw Markdown string.
@@ -41,7 +63,7 @@ function parseFrontmatter(raw) {
       meta[k] = {};
       block = k;
     } else {
-      meta[k] = v;
+      meta[k] = v === "true" ? true : v === "false" ? false : v;
     }
   }
 
@@ -71,10 +93,7 @@ function buildMeta(slug, rawMd) {
     description: str(meta.description),
     thumbnail: str(meta.thumbnail), // '' when missing or blank
     category: str(meta.category),
-    components: {
-      katex: meta["components.katex"] ?? false,
-      highlight: meta["components.highlight"] ?? false,
-    },
+    components: normalizeComponents(meta),
   };
 }
 
@@ -90,11 +109,7 @@ function buildPostData(slug, rawMd) {
     description: str(meta.description),
     thumbnail: str(meta.thumbnail),
     category: str(meta.category),
-    components: Object.assign(
-      {},
-      DEFAULT_COMPONENTS,
-      typeof meta.components === "object" ? meta.components : {},
-    ),
+    components: Object.assign({}, DEFAULT_COMPONENTS, normalizeComponents(meta)),
     content,
   };
 }
@@ -138,11 +153,7 @@ function buildProtectedPostData(slug, rawMd) {
           .map((t) => t.trim())
           .filter(Boolean)
       : [],
-    components: Object.assign(
-      {},
-      DEFAULT_COMPONENTS,
-      typeof meta.components === "object" ? meta.components : {},
-    ),
+    components: Object.assign({}, DEFAULT_COMPONENTS, normalizeComponents(meta)),
     content,
   };
 }
