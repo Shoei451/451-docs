@@ -1,93 +1,85 @@
 # 451-docs
 
-Personal notes site — [451-docs.netlify.app](https://451-docs.netlify.app)
+Personal notes site - [451-docs.netlify.app](https://451-docs.netlify.app)
 
-Static frontend + Netlify Functions. Markdown content lives in a separate private repository and is fetched at runtime via the GitHub Contents API. No build step required for content updates.
+The repository contains the site code only. Markdown content lives in the private `Shoei451/md-contents` repository and is fetched at runtime through Netlify Functions and the GitHub Contents API. Content-only updates do not require rebuilding this repo.
 
----
+## Supported Sites
+
+Site selection is query-parameter based. `index.html`, `post.html`, and `protected-post.html` all preserve `?site=<id>`.
+
+| Site id             | Public base path                      | Protected base path                      | Notes                      |
+| ------------------- | ------------------------------------- | ---------------------------------------- | -------------------------- |
+| `451-docs`          | `451-docs/public_posts`               | `451-docs/protected_posts`               | Default site               |
+| `shoei451-website`  | `shoei451-website/public_posts`       | None                                     | Alternate docs site        |
+| `china-history`     | `china-history/public_posts`          | None                                     | Site-specific hero/avatar  |
 
 ## Architecture
 
-```
-Browser
-  │
-  ├── GET /                    → index.html (static)
-  │     ├── fetch /api/posts        → Netlify Function → GitHub API
-  │     └── fetch /api/protected-posts → Netlify Function → GitHub API
-  │                                      md-contents/451-docs/protected_posts/
-  │
-  ├── GET /post.html?slug=xxx
-  │     ├── fetch /api/posts?site=...   → Netlify Function (site accent/ui)
-  │     └── fetch /api/post?slug=xxx    → Netlify Function → GitHub API
-  │                                        md-contents/451-docs/public_posts/{slug}.md
-  │
-  └── GET /protected-post.html?slug=xxx
-        ├── fetch /api/posts?site=...    → Netlify Function (site accent/ui)
-        └── fetch /api/protected-post?slug=xxx&password=xxx
-                                            → Netlify Function → GitHub API
-                                              md-contents/451-docs/protected_posts/{slug}.md
-                                              (password verified server-side)
+```text
+src/*.html
+  -> fetch /api/posts?site=...
+  -> fetch /api/post?slug=...&site=...
+  -> fetch /api/protected-posts?site=...
+  -> fetch /api/protected-post?slug=...&password=...&site=...
+
+netlify/functions/*
+  -> read site config from netlify/functions/_lib/config.js
+  -> fetch markdown from Shoei451/md-contents via GitHub Contents API
+  -> parse frontmatter in netlify/functions/_lib/frontmatter.js
+  -> return JSON used by src/js/*
+
+scripts/build.js
+  -> copy src/ to dist/
+  -> minify JS/CSS with esbuild
+
+Netlify
+  -> publish dist/
+  -> redirect /api/* to /.netlify/functions/*
 ```
 
-All Markdown is fetched at runtime from `md-contents` (private repo) via the GitHub Contents API. The `451-docs` repo contains only code — no generated HTML, no copied JSON files.
-
----
+`src/js/post-common.js` loads `marked` for every post page and enables KaTeX / highlight.js only when frontmatter requests them.
 
 ## Repository Layout
 
-```
-451-docs/                          ← this repo (public)
-├── index.html                     ← home page (card grid + sidebar)
-├── post.html                      ← public post viewer (?slug=)
-├── protected-post.html            ← password-gated post viewer (?slug=)
-├── netlify.toml                   ← Functions config + /api/* redirects
-├── package.json
-│
-├── netlify/
-│   └── functions/
-│       ├── posts.js               ← GET /api/posts
-│       ├── post.js                ← GET /api/post?slug=
-│       ├── protected-posts.js     ← GET /api/protected-posts
-│       ├── protected-post.js      ← GET /api/protected-post?slug=&password=
-│       └── _lib/
-│           ├── github.js          ← GitHub Contents API wrapper
-│           ├── frontmatter.js     ← shared frontmatter parser + post builders
-│           ├──config.js           ← cofiguration (REPO, BASE_PUBLIC, BASE_PROTECTED)
-│           └── cors.js            ← shared CORS headers + OPTIONS handler
-│
-├── css/
-│   ├── styles.css                 ← global styles, sidebar, TOC, loader
-│   ├── theme.css                  ← dark/light theme toggle button
-│   ├── home.css                   ← profile hero + card grid
-│   └── protected-post.css         ← password overlay + post header
-│
-├── js/
-│   ├── theme-toggle.js            ← dark mode persistence (localStorage)
-│   ├── index-logic.js             ← home page: fetch posts, render cards, category filter
-│   ├── post-common.js             ← shared: ComponentLoader, buildToc(), loaderStart/Done()
-│   ├── public-post.js
-│   ├── protected-post.js          ← password form logic, slug validation, post render
-│   └── script.js                  ← (legacy TOC, kept for reference)
-│
-└── images/
-
-md-contents/                       ← separate private repo
-└── 451-docs/
-    ├── public_posts/              ← served via /api/posts + /api/post
-    │   ├── some-post.md
-    │   └── subfolder/some-post.md ← subfolders supported
-    └── protected_posts/           ← served via /api/protected-posts + /api/protected-post
-        ├── past-exam1.md
-        └── geography/topic.md     ← subfolders supported
+```text
+451-docs/
+|-- src/
+|   |-- index.html
+|   |-- post.html
+|   |-- protected-post.html
+|   |-- css/
+|   |-- js/
+|   |-- images/
+|   `-- toolbox/
+|-- netlify/
+|   `-- functions/
+|       |-- posts.js
+|       |-- post.js
+|       |-- protected-posts.js
+|       |-- protected-post.js
+|       `-- _lib/
+|-- scripts/
+|   |-- build.js
+|   |-- check-js.mjs
+|   `-- check-links.mjs
+|-- docs/
+|-- netlify.toml
+|-- package.json
+`-- dist/                         # generated by npm run build
 ```
 
----
+Tool pages currently live under `src/toolbox/`:
 
-## Adding a Post
+- `dropbox-to-md.html`
+- `password-hasher.html`
+- `cloze-builder.html`
 
-### Public post
+## Content Format
 
-Create `your-post.md` in `md-contents/451-docs/public_posts/` with frontmatter:
+### Public posts
+
+Create a Markdown file under `md-contents/<site>/public_posts/`.
 
 ```markdown
 ---
@@ -103,20 +95,18 @@ components.highlight: false
 # Content here...
 ```
 
-Push to `md-contents` main branch. The post is live immediately — no rebuild needed.
+### Protected posts
 
-### Protected post
-
-Create `your-post.md` in `md-contents/451-docs/protected_posts/` with frontmatter:
+Create a Markdown file under `md-contents/451-docs/protected_posts/`.
 
 ```markdown
 ---
 title: Post Title
 date: 2026-03-10
-excerpt: One-line description shown on the index card.
+excerpt: One-line description shown on the protected card.
 thumbnail: https://example.com/image.png
-category: 受験
-tags: 東大, 英語
+category: exam
+tags: english, mock-test
 password: mysecret
 components.katex: false
 components.highlight: false
@@ -125,119 +115,72 @@ components.highlight: false
 # Content here...
 ```
 
-The password is verified server-side by the Netlify Function. It is never sent to the browser.
-
-### `components` field
-
-Controls which libraries `post.html` / `protected-post.html` load for this post. Omitting the block defaults both to `false`.
-The recommended syntax is `components.katex` / `components.highlight`. A nested `components:` block is also accepted for compatibility.
-
-| Key         | Default | When to enable                                        |
-| ----------- | ------- | ----------------------------------------------------- |
-| `katex`     | `false` | Post contains math expressions (`$...$` or `$$...$$`) |
-| `highlight` | `false` | Post contains fenced code blocks                      |
+`netlify/functions/_lib/frontmatter.js` currently compares the submitted password against the frontmatter `password` value as plain text.
 
 ### Frontmatter rules
 
-All top-level fields must be written **without leading spaces**. Indented lines are interpreted as nested blocks. A misplaced space before `title:` will cause the parser to silently skip the field.
-
-```yaml
-# ✓ correct
-title: My Post
-date: 2026-03-10
-
-# ✗ wrong — title will not be parsed
- title: My Post
-```
+- Top-level keys must not start with leading spaces.
+- Nested `components:` blocks are accepted, but `components.katex` / `components.highlight` also work.
+- Missing `thumbnail`, `description`, `excerpt`, `category`, and `tags` fields are tolerated.
 
 ### Subfolder slugs
 
-Both `public_posts/` and `protected_posts/` support subfolders of arbitrary depth. The slug mirrors the path relative to the base directory.
+Public and protected content both support nested folders. The slug is the path relative to the configured base directory.
 
+```text
+protected_posts/geography/landforms.md
+-> slug: geography/landforms
+
+public_posts/math/calculus/limits.md
+-> slug: math/calculus/limits
 ```
-protected_posts/geography/landforms.md  →  slug: geography/landforms
-public_posts/math/calculus/limits.md    →  slug: math/calculus/limits
-```
 
-Link as: `post.html?slug=math/calculus/limits`
+## Development
 
----
+Requirements:
 
-## Netlify Environment Variables
+- Node.js 18+
 
-Set in Netlify → Site settings → Environment variables:
-
-| Variable       | Value      | Notes                                                                                                                                        |
-| -------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN` | GitHub PAT | Needs `contents: read` on `md-contents`. Fine-grained PAT recommended. Without this, the GitHub API falls back to 60 req/hr unauthenticated. |
-
----
-
-## Local Development— netlify dev
-
-Runs Functions locally with real GitHub API calls. Requires `GITHUB_TOKEN` in `.env`.
+Available scripts:
 
 ```bash
-# .env (gitignored)
-GITHUB_TOKEN=github_pat_...
-
-npm run dev   # starts netlify dev
+npm run check   # syntax + local-link validation
+npm run build   # copy src/ to dist/ and minify JS/CSS
+npm run dev     # static preview of src/ via serve
 ```
 
-Open `http://localhost:8888`.
-
----
+`npm run dev` serves `src/` directly. It does not emulate Netlify Functions or `/api/*` redirects.
 
 ## Deployment
 
-Push to `main` → Netlify auto-deploys. No build command (`netlify.toml` sets `echo 'No build step'`).
+`netlify.toml` is configured to:
 
-Content updates in `md-contents` are live instantly without a Netlify deploy.
+- publish `dist/`
+- run `npm run build`
+- redirect `/api/posts`, `/api/post`, `/api/protected-posts`, and `/api/protected-post` to Netlify Functions
 
----
+Set `GITHUB_TOKEN` in Netlify environment variables. It needs read access to `Shoei451/md-contents`.
+
+Site code deploys on push to `main`. Content updates in `md-contents` are reflected at request time because posts are fetched dynamically.
 
 ## API Reference
 
-All routes return `application/json` with CORS headers (`Access-Control-Allow-Origin: *`).
+All routes return JSON with CORS headers.
 
-| Route                                 | Method | Description                                                                                           |
-| ------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------- |
-| `/api/posts`                          | GET    | Public post metadata list, sorted by date descending. No content field.                               |
-| `/api/post?slug=`                     | GET    | Full public post including parsed Markdown content. `404` if not found.                               |
-| `/api/protected-posts`                | GET    | Protected post metadata list (no content, no password). Cached 60s.                                   |
-| `/api/protected-post?slug=&password=` | GET    | Full protected post after server-side password verification. `401` on wrong password or missing post. |
+| Route                                 | Method | Description |
+| ------------------------------------- | ------ | ----------- |
+| `/api/posts?site=`                    | GET    | Returns `{ accent, accentDark, ui, posts }` for the selected site. |
+| `/api/post?slug=&site=`               | GET    | Returns one public post with parsed content. Invalid slug -> `400`, missing slug -> `400`, not found -> `404`. |
+| `/api/protected-posts?site=`          | GET    | Returns protected post metadata for the selected site. If the site has no protected base path, returns `[]`. |
+| `/api/protected-post?slug=&password=&site=` | GET | Returns one protected post after server-side password validation. Sites without protected content return `404`; invalid or missing password returns `400`; wrong password or missing post returns `401`. |
 
----
+## Notes On UI
 
-## Design System
+- Home cards are merged from public and protected metadata, then sorted by date descending.
+- `src/js/index-logic.js` provides client-side search, category filtering, and site-aware links.
+- `src/js/post-common.js` builds the inline/sidebar table of contents and applies per-site accent colors.
+- Fonts come from Google Fonts: `DM Serif Display` and `DM Sans`.
 
-Font stack: `DM Serif Display` (headings) + `DM Sans` (body).
+## Project Docs
 
-CSS variables (defined in `css/styles.css`):
-
-| Variable    | Light     | Dark      |
-| ----------- | --------- | --------- |
-| `--bg`      | `#ffffff` | `#0f172a` |
-| `--surface` | `#f9fafb` | `#1e293b` |
-| `--text`    | `#222`    | `#f1f5f9` |
-| `--sub`     | `#6b7280` | `#94a3b8` |
-| `--border`  | `#e5e7eb` | `#334155` |
-| `--accent`  | `#3b82f6` | `#60a5fa` |
-
-Dark mode is toggled by `body.dark` and persisted to `localStorage` via `js/theme-toggle.js`.
-
-`--accent` is overridden per site from `netlify/functions/_lib/config.js` (`accent`, `accentDark`), and this override is applied on `index.html`, `post.html`, and `protected-post.html`.
-
----
-
-## Roadmap
-
-See [`md/roadmap.md`](./md/roadmap.md) for the full execution roadmap.
-
-| Phase                    | Status  | Description                                               |
-| ------------------------ | ------- | --------------------------------------------------------- |
-| 1 — slug system          | ✅ Done | Single `post.html`, no per-post HTML files                |
-| 1 — Netlify Functions    | ✅ Done | md-contents served via GitHub API at runtime              |
-| 2 — Protected posts      | ✅ Done | Server-side password verification, no Supabase dependency |
-| 3 — RSS                  | Planned |                                                           |
-| 3 — JS/CSS consolidation | Planned |                                                           |
+Tracking docs live in [`docs/`](./docs/README.md). The current execution status is in [`docs/roadmap.md`](./docs/roadmap.md).

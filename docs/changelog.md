@@ -4,6 +4,37 @@ All notable project changes for `451-docs`.
 
 ---
 
+## 2026-04-11
+
+### Completed
+
+- Site source was reorganized under `src/`, while Netlify Functions were kept at repo-root `netlify/functions/`.
+- Netlify deployment now builds `dist/` from `src/` with `scripts/build.js` and publishes the built output via `netlify.toml`.
+- Repository validation and release scripts were added:
+  - `npm run check`
+  - `npm run check:js`
+  - `npm run check:links`
+  - `npm run build`
+  - `npm run dev`
+- Multi-site configuration was expanded in `netlify/functions/_lib/config.js` for:
+  - `451-docs`
+  - `shoei451-website`
+  - `china-history`
+- Home feed behavior was improved in `src/js/index-logic.js` with category filters, search, protected-card rendering, and selected-category handling fixes.
+- Toolbox pages were added under `src/toolbox/`:
+  - `dropbox-to-md.html`
+  - `password-hasher.html`
+  - `cloze-builder.html`
+- `china-history` now includes a bundled avatar image and avatar attribution UI.
+
+### Notes
+
+- `npm run check` passes against the current repository state.
+- `npm run build` currently generates `dist/` from `src/`.
+- Tracking docs now reference `docs/` paths instead of the removed `md/` path.
+
+---
+
 ## 2026-03-26
 
 ### Completed
@@ -27,7 +58,7 @@ All notable project changes for `451-docs`.
 ### Notes
 
 - The current runtime architecture no longer requires generated post files in this repository.
-- Some legacy scaffolding still exists and is tracked in `md/roadmap.md` and `md/todo.md`.
+- Some legacy scaffolding still exists and is tracked in `docs/roadmap.md` and `docs/todo.md`.
 
 ---
 

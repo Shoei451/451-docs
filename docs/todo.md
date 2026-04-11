@@ -1,10 +1,10 @@
 # TODO (Inbox)
 
-Last updated: 2026-03-26
+Last updated: 2026-04-11
 
-Use this file only for untriaged notes. Move approved items into `md/roadmap.md`.
+Use this file only for untriaged notes. Move approved items into `docs/roadmap.md`.
 
 ## Inbox
 
-- Confirm versioning policy (`package.json` vs changelog cadence).
-- Optional: normalize remaining Japanese UI copy where English UI is desired.
+- Optional: normalize remaining Japanese/English mixed UI copy across `src/`.
+- Optional: replace placeholder avatar images for `451-docs` and `shoei451-website` in `netlify/functions/_lib/config.js`.

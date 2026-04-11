@@ -1,6 +1,6 @@
 # Migration Notes (Historical)
 
-Last updated: 2026-03-26
+Last updated: 2026-04-11
 
 This document records the migration from build-generated post files to runtime content delivery.
 It is a reference log, not an active implementation guide.
@@ -29,17 +29,22 @@ The migration objective is complete:
 | Build artifacts (`posts-data` or per-post generated files) used for rendering | Netlify Functions return metadata/post payloads directly      |
 | Mixed client-heavy protected flow                                             | Password verification handled on server function              |
 
-## Important post-migration note
+## Follow-up changes after the migration
 
-Some legacy files/scripts remain in the repository and should be treated as cleanup work, not as active architecture:
+The runtime migration is no longer in a cleanup state. Subsequent work aligned the repository with the runtime model:
 
-- `package.json` scripts still reference `build.js` (currently missing).
-- `.github/workflows/build.yml` still reflects an older content-copy pipeline.
+- App source now lives under `src/`.
+- Netlify Functions live at repo-root `netlify/functions/`.
+- `scripts/build.js` copies `src/` to `dist/` and minifies JS/CSS for deployment.
+- `scripts/check-js.mjs` and `scripts/check-links.mjs` validate repository integrity before release.
+- `netlify.toml` publishes `dist/` and routes `/api/*` to Netlify Functions.
 
-Track this cleanup in `md/roadmap.md` (M4 and M5).
+Track ongoing product work in `docs/roadmap.md`.
 
 ## Current recommended dev path
 
-1. Run with `netlify dev` for local API + frontend behavior.
-2. Keep content changes in `md-contents`.
-3. Keep `451-docs` focused on UI and functions code.
+1. Run `npm run check` to validate JavaScript syntax and local links.
+2. Run `npm run build` to produce the deployable `dist/` output.
+3. Run `npm run dev` for a static preview of `src/`.
+4. Keep content changes in `md-contents`.
+5. Keep `451-docs` focused on UI, Netlify Functions, and build/check tooling.
