@@ -261,6 +261,16 @@ async function initialize() {
       allBtn.classList.add("active");
       allBtn.style.color = "var(--text)";
       allBtn.style.borderBottomColor = "var(--accent)";
+      const bar = document.getElementById("active-category-bar");
+      const label = document.getElementById("active-category-label");
+      if (bar && label) {
+        if (selected) {
+          label.textContent = selected;
+          bar.style.display = "";
+        } else {
+          bar.style.display = "none";
+        }
+      }
       filterWrap.appendChild(allBtn);
       categories.forEach((cat) => filterWrap.appendChild(makeBtn(cat, cat)));
 
