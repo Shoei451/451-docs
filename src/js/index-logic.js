@@ -182,6 +182,7 @@ async function initialize() {
   const container = document.getElementById("home-container");
   const countEl = document.getElementById("posts-count");
   const tocList = document.getElementById("tocList");
+  let selectedCategory = "";
 
   const sp = siteParam();
 
@@ -230,6 +231,19 @@ async function initialize() {
   // 5. サイドバー：カテゴリフィルター + Posts 一覧
   if (tocList) {
     if (categories.length > 0) {
+      const bar = document.getElementById("active-category-bar");
+      const label = document.getElementById("active-category-label");
+      const updateCategoryBar = () => {
+        if (!bar || !label) return;
+        if (selectedCategory) {
+          label.textContent = selectedCategory;
+          bar.style.display = "";
+        } else {
+          label.textContent = "";
+          bar.style.display = "none";
+        }
+      };
+
       const filterWrap = document.createElement("div");
       filterWrap.id = "category-filters";
       filterWrap.style.cssText = "margin-bottom: 20px;";
@@ -261,23 +275,14 @@ async function initialize() {
       allBtn.classList.add("active");
       allBtn.style.color = "var(--text)";
       allBtn.style.borderBottomColor = "var(--accent)";
-      const bar = document.getElementById("active-category-bar");
-      const label = document.getElementById("active-category-label");
-      if (bar && label) {
-        if (selected) {
-          label.textContent = selected;
-          bar.style.display = "";
-        } else {
-          bar.style.display = "none";
-        }
-      }
+      updateCategoryBar();
       filterWrap.appendChild(allBtn);
       categories.forEach((cat) => filterWrap.appendChild(makeBtn(cat, cat)));
 
       filterWrap.addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-cat]");
         if (!btn) return;
-        const selected = btn.dataset.cat;
+        selectedCategory = btn.dataset.cat;
 
         filterWrap.querySelectorAll("button").forEach((b) => {
           b.classList.remove("active");
@@ -290,12 +295,17 @@ async function initialize() {
 
         container.querySelectorAll(".card").forEach((card) => {
           card.style.display =
-            !selected || card.dataset.category === selected ? "" : "none";
+            !selectedCategory || card.dataset.category === selectedCategory
+              ? ""
+              : "none";
         });
         tocList.querySelectorAll("a[data-cat]").forEach((a) => {
           a.style.display =
-            !selected || a.dataset.cat === selected ? "" : "none";
+            !selectedCategory || a.dataset.cat === selectedCategory
+              ? ""
+              : "none";
         });
+        updateCategoryBar();
       });
 
       tocList.before(filterWrap);
