@@ -62,6 +62,29 @@ const SITES = [
       links: [],
     },
   },
+  {
+    id: "china-history",
+    BASE_PUBLIC: "china-history/public_posts",
+    // BASE_PROTECTED intentionally absent
+    accent: "#c0392b",
+    accentDark: "#e74c3c",
+    ui: {
+      siteTitle: "China History Notes | shoei451",
+      ownerLabel: "Shoei451",
+      heroLabel: "Study Notes",
+      heroTitle: "China<br><em>History.</em>",
+      heroBio:
+        "Notes and resources for studying Chinese history, from ancient dynasties to the modern era.",
+      postsHeading: "Notes",
+      footerText: "© 2026 Shoei451",
+      avatarUrl: "/images/china-history-avatar.jpg",
+      avatarAttribution: {
+        href: "https://unsplash.com/photos/white-and-brown-temple-under-white-sky-during-daytime-btVxsyZ3VHo",
+        label: "Photo by Danny Chen",
+      },
+      links: [],
+    },
+  },
 ];
 
 /**

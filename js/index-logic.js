@@ -93,6 +93,19 @@ function applyUI(ui) {
       )
       .join("");
   }
+  if (ui.avatarAttribution) {
+    const wrap = document.getElementById("hero-avatar-wrap");
+    if (wrap) {
+      const a = document.createElement("a");
+      a.href = ui.avatarAttribution.href;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = ui.avatarAttribution.label;
+      a.style.cssText =
+        "display:block; font-size:0.65rem; color:var(--sub); margin-top:4px; text-align:center; text-decoration:none;";
+      wrap.appendChild(a);
+    }
+  }
 }
 
 function iconSVG(icon) {
