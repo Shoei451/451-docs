@@ -304,6 +304,71 @@ async function initialize() {
   // 6. カードをレンダリング
   if (countEl) countEl.textContent = allCards.length + " posts";
   allCards.forEach(({ card }) => container.appendChild(card));
+
+  // =====================================================
+  // 検索
+  // =====================================================
+  (function () {
+    const input = document.getElementById("post-search");
+    const clearBtn = document.getElementById("search-clear");
+    const noResults = document.createElement("p");
+    noResults.className = "search-no-results";
+    noResults.textContent = "No posts found.";
+    noResults.style.display = "none";
+    container.after(noResults);
+
+    let activeCat = "";
+
+    // カテゴリフィルタが変わったときにactiveCatを同期させる
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-cat]");
+      if (!btn) return;
+      activeCat = btn.dataset.cat;
+      applyFilter();
+    });
+
+    function applyFilter() {
+      const q = (input?.value || "").trim().toLowerCase();
+      clearBtn.style.display = q ? "" : "none";
+
+      let visible = 0;
+      allCards.forEach(({ card }) => {
+        const title = (
+          card.querySelector(".card-title")?.textContent || ""
+        ).toLowerCase();
+        const desc = (
+          card.querySelector(".card-desc")?.textContent || ""
+        ).toLowerCase();
+        const cat = card.dataset.category || "";
+
+        const matchesSearch = !q || title.includes(q) || desc.includes(q);
+        const matchesCat = !activeCat || cat === activeCat;
+
+        const show = matchesSearch && matchesCat;
+        card.style.display = show ? "" : "none";
+        if (show) visible++;
+      });
+
+      // サイドバーのリンクはカテゴリのみ（検索は絡めない）
+      tocList?.querySelectorAll("a[data-cat]").forEach((a) => {
+        a.style.display =
+          !activeCat || a.dataset.cat === activeCat ? "" : "none";
+      });
+
+      noResults.style.display = visible === 0 ? "" : "none";
+      if (countEl) countEl.textContent = visible + " posts";
+    }
+
+    input?.addEventListener("input", applyFilter);
+
+    clearBtn?.addEventListener("click", () => {
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
+      applyFilter();
+    });
+  })();
 }
 
 document.addEventListener("DOMContentLoaded", initialize);

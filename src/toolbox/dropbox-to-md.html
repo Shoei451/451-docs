@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../images/s-docs.svg" />
+    <title>Dropbox to Markdown - Toolbox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="css/toolbox.css" />
+    <link rel="stylesheet" href="css/dropbox-to-md.css" />
+  </head>
+  <body>
+    <a href="index.html" class="back-link">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Toolbox
+    </a>
+
+    <div class="hero">
+      <div class="hero-label">Image</div>
+      <h1>Dropbox to <em>Markdown</em></h1>
+      <p>
+        Paste Dropbox share links and convert them into Markdown image syntax in
+        one step.
+      </p>
+    </div>
+
+    <div class="page-content">
+      <div class="info-banner">
+        <strong>About rlkey:</strong>
+        New-format links (<code>/scl/</code>) require an
+        <code>rlkey</code> query parameter. This tool keeps
+        <code>rlkey</code> and replaces <code>dl=0</code> with
+        <code>raw=1</code>.
+      </div>
+
+      <details>
+        <summary>Show usage examples</summary>
+        <div class="example-grid">
+          <div>
+            <div class="example-item">
+              <div class="ex-label">Input (legacy /s/ format)</div>
+              <code>https://www.dropbox.com/s/abc123/image.png?dl=0</code>
+            </div>
+            <div class="arrow-row">v</div>
+            <div class="example-item">
+              <div class="ex-label">Output</div>
+              <code>![](https://www.dropbox.com/s/abc123/image.png?raw=1)</code>
+            </div>
+          </div>
+          <div>
+            <div class="example-item">
+              <div class="ex-label">Input (modern /scl/ + rlkey)</div>
+              <code
+                >https://www.dropbox.com/scl/fi/abc/img.png?rlkey=xyz&dl=0</code
+              >
+            </div>
+            <div class="arrow-row">v</div>
+            <div class="example-item">
+              <div class="ex-label">Output</div>
+              <code
+                >![](https://www.dropbox.com/scl/fi/abc/img.png?rlkey=xyz&raw=1)</code
+              >
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="card">
+        <h2><span class="step-badge">1</span> Enter Dropbox links</h2>
+        <div class="field-label">
+          <label for="inputLinks">Links (one per line)</label>
+          <span class="kbd-hint"
+            ><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to convert</span
+          >
+        </div>
+        <textarea
+          id="inputLinks"
+          placeholder="https://www.dropbox.com/scl/fi/abc123/image1.png?rlkey=xyz789&dl=0
+https://www.dropbox.com/s/def456/image2.jpg?dl=0"
+        ></textarea>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="convertLinks()">
+            Convert
+          </button>
+          <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+        </div>
+        <div id="statusMessage" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step-badge">2</span> Copy Markdown output</h2>
+        <div class="field-label">
+          <label for="outputMarkdown">Converted result</label>
+        </div>
+        <textarea
+          id="outputMarkdown"
+          readonly
+          placeholder="Converted output appears here..."
+        ></textarea>
+
+        <div class="btn-row">
+          <button
+            class="btn btn-success"
+            onclick="copyToClipboard()"
+            id="copyBtn"
+            disabled
+          >
+            Copy to clipboard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        Get in touch:
+        <a href="mailto:okamotoshoei451@gmail.com">okamotoshoei451@gmail.com</a>
+      </p>
+    </footer>
+
+    <script src="js/dropbox-to-md.js"></script>
+  </body>
+</html>

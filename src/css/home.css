@@ -280,3 +280,103 @@ body {
   margin: 0 0 20px;
   color: var(--text);
 }
+
+/* =====================
+   SEARCH BAR
+===================== */
+
+.posts-header {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  width: 220px;
+  transition: width 0.2s ease;
+}
+
+.search-wrap:focus-within {
+  width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 11px;
+  width: 15px;
+  height: 15px;
+  color: var(--sub);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 32px 8px 34px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.88rem;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  /* reset browser default search styling */
+  -webkit-appearance: none;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.search-input::placeholder {
+  color: var(--sub);
+}
+
+/* hide native ✕ in webkit */
+.search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search-clear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sub);
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+
+.search-clear:hover {
+  color: var(--text);
+}
+
+.search-no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  color: var(--sub);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 600px) {
+  .search-wrap {
+    width: 100%;
+    margin-left: 0;
+    order: 3; /* posts-headingとcountの下 */
+  }
+  .search-wrap:focus-within {
+    width: 100%;
+  }
+}

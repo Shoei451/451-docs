@@ -86,6 +86,35 @@
       <div class="posts-header">
         <h2 class="posts-heading" id="posts-heading"></h2>
         <span class="posts-count" id="posts-count"></span>
+        <div class="search-wrap">
+          <svg
+            class="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="search"
+            id="post-search"
+            class="search-input"
+            placeholder="Search posts…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button
+            class="search-clear"
+            id="search-clear"
+            aria-label="Clear search"
+            style="display: none"
+          >
+            ✕
+          </button>
+        </div>
       </div>
       <div class="home-container" id="home-container"></div>
     </main>
