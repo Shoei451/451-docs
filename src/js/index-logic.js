@@ -379,6 +379,12 @@ async function initialize() {
       applyFilter();
     });
   })();
+
+  document
+    .getElementById("active-category-clear")
+    ?.addEventListener("click", () => {
+      filterWrap.querySelector("button[data-cat='']")?.click();
+    });
 }
 
 document.addEventListener("DOMContentLoaded", initialize);
