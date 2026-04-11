@@ -407,9 +407,15 @@ body {
 #active-category-clear {
   background: none;
   border: 1.5px solid var(--border);
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
+  /* 1. border-radiusを大きな値（999pxなど）にすると、常に左右が半円の形になります */
+  border-radius: 20px;
+
+  /* 2. 固定サイズを解除 */
+  width: auto;
+  height: auto;
+
+  padding: 4px 10px;
+
   cursor: pointer;
   color: var(--sub);
   font-size: 0.7rem;
