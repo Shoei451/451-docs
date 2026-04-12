@@ -4,7 +4,7 @@
   "description": "Personal notes site — slug-based static site",
   "private": true,
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.mjs",
     "check:js": "node scripts/check-js.mjs",
     "check:links": "node scripts/check-links.mjs",
     "check": "npm run check:js && npm run check:links",

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+import fs from "node:fs/promises";
+import path from "node:path";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { minify } from "html-minifier-terser";
+import esbuild from "esbuild";
 
-const fs = require("node:fs/promises");
-const path = require("node:path");
-const esbuild = require("esbuild");
-
-const rootDir = path.resolve(__dirname, "..");
+const rootDir = new URL("..", import.meta.url).pathname;
 const sourceDir = path.join(rootDir, "src");
 const outputDir = path.join(rootDir, "dist");
 
@@ -76,6 +77,28 @@ async function minifyAsset(filePath) {
   };
 }
 
+async function minifyHtmlInDist() {
+  // node:fs の同期版 API は別 import から使用
+  const htmlFiles = readdirSync("dist", { recursive: true })
+    .filter((f) => f.endsWith(".html"))
+    .map((f) => path.join("dist", f));
+
+  for (const file of htmlFiles) {
+    const input = readFileSync(file, "utf-8");
+    const output = await minify(input, {
+      collapseWhitespace: true,
+      removeComments: true,
+      removeRedundantAttributes: true,
+      removeEmptyAttributes: false, // alt="" を守る
+      minifyCSS: true,
+      minifyJS: true,
+    });
+    writeFileSync(file, output);
+  }
+
+  console.log(`  → ${htmlFiles.length} HTML files minified`);
+}
+
 async function build() {
   await validateSource();
 
@@ -106,37 +129,27 @@ async function build() {
   const savings = beforeBytes - afterBytes;
 
   console.log(
-    `Minified ${minifiedAssets.length} assets in ${path.relative(rootDir, outputDir)} (${formatBytes(beforeBytes)} -> ${formatBytes(afterBytes)}, saved ${formatBytes(savings)}).`,
+    `Minified ${minifiedAssets.length} assets in ${path.relative(
+      rootDir,
+      outputDir,
+    )} (${formatBytes(beforeBytes)} -> ${formatBytes(
+      afterBytes,
+    )}, saved ${formatBytes(savings)}).`,
   );
   console.log(
-    `Built ${files.length} files from ${path.relative(rootDir, sourceDir)} to ${path.relative(rootDir, outputDir)} (${formatBytes(totalBytes)} total).`,
+    `Built ${files.length} files from ${path.relative(
+      rootDir,
+      sourceDir,
+    )} to ${path.relative(rootDir, outputDir)} (${formatBytes(
+      totalBytes,
+    )} total).`,
   );
+
+  console.log("Minifying HTML...");
+  await minifyHtmlInDist();
 }
 
 build().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });
-
-console.log("Minifying HTML...");
-
-import { minify } from "html-minifier-terser";
-
-const htmlFiles = fs
-  .readdirSync("dist", { recursive: true })
-  .filter((f) => f.endsWith(".html"))
-  .map((f) => path.join("dist", f));
-
-for (const file of htmlFiles) {
-  const input = fs.readFileSync(file, "utf-8");
-  const output = await minify(input, {
-    collapseWhitespace: true,
-    removeComments: true,
-    removeRedundantAttributes: true,
-    removeEmptyAttributes: false, // alt="" を守る
-    minifyCSS: true,
-    minifyJS: true,
-  });
-  fs.writeFileSync(file, output);
-}
-console.log(`  → ${htmlFiles.length} HTML files minified`);
