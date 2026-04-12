@@ -86,6 +86,7 @@ async function minifyHtmlInDist() {
     const output = await minify(input, {
       collapseWhitespace: true,
       removeComments: true,
+      conservativeCollapse: false, // 追加: 連続空白を1つに
       removeRedundantAttributes: true,
       removeEmptyAttributes: false,
       minifyCSS: true,
