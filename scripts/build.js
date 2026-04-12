@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { execSync } from "child_process";
+
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const esbuild = require("esbuild");
