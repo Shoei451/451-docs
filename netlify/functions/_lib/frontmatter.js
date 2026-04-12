@@ -109,7 +109,11 @@ function buildPostData(slug, rawMd) {
     description: str(meta.description),
     thumbnail: str(meta.thumbnail),
     category: str(meta.category),
-    components: Object.assign({}, DEFAULT_COMPONENTS, normalizeComponents(meta)),
+    components: Object.assign(
+      {},
+      DEFAULT_COMPONENTS,
+      normalizeComponents(meta),
+    ),
     content,
   };
 }
@@ -153,7 +157,11 @@ function buildProtectedPostData(slug, rawMd) {
           .map((t) => t.trim())
           .filter(Boolean)
       : [],
-    components: Object.assign({}, DEFAULT_COMPONENTS, normalizeComponents(meta)),
+    components: Object.assign(
+      {},
+      DEFAULT_COMPONENTS,
+      normalizeComponents(meta),
+    ),
     content,
   };
 }

@@ -8,11 +8,11 @@ The repository contains the site code only. Markdown content lives in the privat
 
 Site selection is query-parameter based. `index.html`, `post.html`, and `protected-post.html` all preserve `?site=<id>`.
 
-| Site id             | Public base path                      | Protected base path                      | Notes                      |
-| ------------------- | ------------------------------------- | ---------------------------------------- | -------------------------- |
-| `451-docs`          | `451-docs/public_posts`               | `451-docs/protected_posts`               | Default site               |
-| `shoei451-website`  | `shoei451-website/public_posts`       | None                                     | Alternate docs site        |
-| `china-history`     | `china-history/public_posts`          | None                                     | Site-specific hero/avatar  |
+| Site id            | Public base path                | Protected base path        | Notes                     |
+| ------------------ | ------------------------------- | -------------------------- | ------------------------- |
+| `451-docs`         | `451-docs/public_posts`         | `451-docs/protected_posts` | Default site              |
+| `shoei451-website` | `shoei451-website/public_posts` | None                       | Alternate docs site       |
+| `china-history`    | `china-history/public_posts`    | None                       | Site-specific hero/avatar |
 
 ## Architecture
 
@@ -167,12 +167,12 @@ Site code deploys on push to `main`. Content updates in `md-contents` are reflec
 
 All routes return JSON with CORS headers.
 
-| Route                                 | Method | Description |
-| ------------------------------------- | ------ | ----------- |
-| `/api/posts?site=`                    | GET    | Returns `{ accent, accentDark, ui, posts }` for the selected site. |
-| `/api/post?slug=&site=`               | GET    | Returns one public post with parsed content. Invalid slug -> `400`, missing slug -> `400`, not found -> `404`. |
-| `/api/protected-posts?site=`          | GET    | Returns protected post metadata for the selected site. If the site has no protected base path, returns `[]`. |
-| `/api/protected-post?slug=&password=&site=` | GET | Returns one protected post after server-side password validation. Sites without protected content return `404`; invalid or missing password returns `400`; wrong password or missing post returns `401`. |
+| Route                                       | Method | Description                                                                                                                                                                                              |
+| ------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/posts?site=`                          | GET    | Returns `{ accent, accentDark, ui, posts }` for the selected site.                                                                                                                                       |
+| `/api/post?slug=&site=`                     | GET    | Returns one public post with parsed content. Invalid slug -> `400`, missing slug -> `400`, not found -> `404`.                                                                                           |
+| `/api/protected-posts?site=`                | GET    | Returns protected post metadata for the selected site. If the site has no protected base path, returns `[]`.                                                                                             |
+| `/api/protected-post?slug=&password=&site=` | GET    | Returns one protected post after server-side password validation. Sites without protected content return `404`; invalid or missing password returns `400`; wrong password or missing post returns `401`. |
 
 ## Notes On UI
 

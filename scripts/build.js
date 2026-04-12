@@ -8,11 +8,7 @@ const rootDir = path.resolve(__dirname, "..");
 const sourceDir = path.join(rootDir, "src");
 const outputDir = path.join(rootDir, "dist");
 
-const requiredEntries = [
-  "index.html",
-  "post.html",
-  "protected-post.html",
-];
+const requiredEntries = ["index.html", "post.html", "protected-post.html"];
 
 async function pathExists(targetPath) {
   try {
@@ -121,3 +117,6 @@ build().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });
+
+console.log("Minifying HTML...");
+execSync("node scripts/minify-html.mjs", { stdio: "inherit" });
