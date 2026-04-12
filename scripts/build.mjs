@@ -99,6 +99,26 @@ async function minifyHtmlInDist() {
   console.log(`  → ${htmlFiles.length} HTML files minified`);
 }
 
+async function minifyHtmlInDist() {
+  const allFiles = await listFiles(outputDir);
+  const htmlFiles = allFiles.filter((f) => f.endsWith(".html"));
+
+  for (const file of htmlFiles) {
+    const input = await fs.readFile(file, "utf-8");
+    const output = await minify(input, {
+      collapseWhitespace: true,
+      removeComments: true,
+      removeRedundantAttributes: true,
+      removeEmptyAttributes: false,
+      minifyCSS: true,
+      minifyJS: true,
+    });
+    await fs.writeFile(file, output);
+  }
+
+  console.log(`  → ${htmlFiles.length} HTML files minified`);
+}
+
 async function build() {
   await validateSource();
 
