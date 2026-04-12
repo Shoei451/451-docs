@@ -78,28 +78,6 @@ async function minifyAsset(filePath) {
 }
 
 async function minifyHtmlInDist() {
-  // node:fs の同期版 API は別 import から使用
-  const htmlFiles = readdirSync("dist", { recursive: true })
-    .filter((f) => f.endsWith(".html"))
-    .map((f) => path.join("dist", f));
-
-  for (const file of htmlFiles) {
-    const input = readFileSync(file, "utf-8");
-    const output = await minify(input, {
-      collapseWhitespace: true,
-      removeComments: true,
-      removeRedundantAttributes: true,
-      removeEmptyAttributes: false, // alt="" を守る
-      minifyCSS: true,
-      minifyJS: true,
-    });
-    writeFileSync(file, output);
-  }
-
-  console.log(`  → ${htmlFiles.length} HTML files minified`);
-}
-
-async function minifyHtmlInDist() {
   const allFiles = await listFiles(outputDir);
   const htmlFiles = allFiles.filter((f) => f.endsWith(".html"));
 
